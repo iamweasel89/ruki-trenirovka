@@ -16,14 +16,31 @@ jobs:
         shell: pwsh
         run: ./ci/proverka-gigieny.ps1
 
-  trenirovka:
+  smoke:
     needs: gigiena
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: fast smoke, one run of each page, fails only if the harness is broken
+        shell: powershell
+        run: ./ci/progon.ps1 -Seed 0 -Progonov 4 -Vyhod "smoke-0.json" -Strogo
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: smoke-0
+          path: smoke-0.json
+          if-no-files-found: warn
+
+  trenirovka:
+    needs: smoke
     runs-on: windows-latest
     timeout-minutes: 40
     strategy:
       fail-fast: false
+      max-parallel: 8
       matrix:
-        seed: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+        seed: [1, 2, 3, 4, 5, 6, 7, 8]
     steps:
       - uses: actions/checkout@v4
       - name: runs of the skill
@@ -37,7 +54,7 @@ jobs:
           if-no-files-found: warn
 
   svod:
-    needs: trenirovka
+    needs: [smoke, trenirovka]
     if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -48,6 +65,11 @@ jobs:
           pattern: rezultat-*
           path: rez
           merge-multiple: true
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: smoke-*
+          path: smoke
+          merge-multiple: true
       - name: runner minutes of the matrix
         env:
           GH_TOKEN: ${{ github.token }}
@@ -55,7 +77,7 @@ jobs:
           curl -sS -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" \
             "https://api.github.com/repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/jobs?per_page=50" > jobs.json || echo '{}' > jobs.json
       - name: aggregate
-        run: python3 ci/svod.py rez out jobs.json
+        run: python3 ci/svod.py rez out jobs.json smoke
       - name: publish to branch itog
         run: |
           git config user.name ci; git config user.email ci@users.noreply.github.com

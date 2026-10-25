@@ -5,14 +5,20 @@ import glob, json, os, sys, collections, datetime
 
 src, dst = sys.argv[1], sys.argv[2]
 jobs_api = sys.argv[3] if len(sys.argv) > 3 else None
+smoke_dir = sys.argv[4] if len(sys.argv) > 4 else None
 os.makedirs(dst, exist_ok=True)
 
 def load(p):
     with open(p, encoding='utf-8-sig') as f:
         return json.load(f)
 
+etap = 'matrica'
+faily = sorted(glob.glob(os.path.join(src, '**', 'rezultat-*.json'), recursive=True))
+if not faily and smoke_dir:
+    etap = 'smoke'
+    faily = sorted(glob.glob(os.path.join(smoke_dir, '**', 'smoke-*.json'), recursive=True))
 raboty = []
-for p in sorted(glob.glob(os.path.join(src, '**', 'rezultat-*.json'), recursive=True)):
+for p in faily:
     try:
         raboty.append(load(p))
     except Exception as e:
@@ -56,7 +62,7 @@ for rb in raboty:
             ost = sk.get('ostanovka') or {}
             pr_txt = (ost.get('prichina') if ost else None) or prov.get('prichina') or 'net-rezultata'
             prichiny[f"{st}: {pr_txt}"] += 1
-            neudachi.append({'seed': pr.get('seed'), 'stranica': st, 'ostanovka': ost, 'proverka': prov.get('prichina'), 'log': (pr.get('log') or [])[-12:]})
+            neudachi.append({'seed': pr.get('seed'), 'stranica': st, 'ostanovka': ost, 'proverka': prov.get('prichina'), 'log': ([pr['log']] if isinstance(pr.get('log'), str) else (pr.get('log') or []))[-14:]})
         elif not expected_stop and sk.get('ostanovka'):
             seriya = 0
     serii_max.append(best)
@@ -78,7 +84,7 @@ if jobs_api and os.path.exists(jobs_api):
 
 dolya = round(100.0 * uspeh / vsego, 1) if vsego else 0.0
 itog = {
-    'run': os.environ.get('GITHUB_RUN_ID'), 'sha': os.environ.get('GITHUB_SHA'),
+    'etap': etap, 'run': os.environ.get('GITHUB_RUN_ID'), 'sha': os.environ.get('GITHUB_SHA'),
     'progonov': vsego, 'uspeshno': uspeh, 'dolya_uspeha_proc': dolya,
     'shagov_ok': shagov, 'max_seriya_shagov': max(serii_max or [0]),
     'srednyaya_max_seriya': round(sum(serii_max) / len(serii_max), 1) if serii_max else 0,
@@ -92,7 +98,7 @@ with open(os.path.join(dst, 'itog.json'), 'w', encoding='utf-8') as f:
     json.dump(itog, f, ensure_ascii=False, indent=1)
 
 L = [f"# Itog trenirovki ruk", "",
-     f"run {itog['run']}, commit {str(itog['sha'])[:10]}", "",
+     f"run {itog['run']}, commit {str(itog['sha'])[:10]}, etap: {etap}", "",
      f"- progonov: {vsego}, uspeshno: {uspeh}, dolya: **{dolya} %**",
      f"- shagov bez ostanovki podryad: max {itog['max_seriya_shagov']}, srednee po rabotam {itog['srednyaya_max_seriya']}",
      f"- shagov ok vsego: {shagov}",
@@ -100,6 +106,17 @@ L = [f"# Itog trenirovki ruk", "",
 for k, v in sorted(itog['po_stranicam'].items()):
     L.append(f"- {k}: {v['uspeh']}/{v['progonov']}")
 L += ["", "## Prichiny neudach", ""] + [f"- {k}: {v}" for k, v in prichiny.most_common()] or ["- net"]
+pervye = {}
+for n in neudachi:
+    k = f"{n['stranica']}: {(n.get('ostanovka') or {}).get('prichina') or n.get('proverka')}"
+    pervye.setdefault(k, n)
+L += ["", "## Pervaya oshibka kazhdogo vida", ""]
+for k, n in pervye.items():
+    L.append(f"### {k} (seed {n['seed']})")
+    L.append(f"- proverka: {n.get('proverka')}; ostanovka: {json.dumps(n.get('ostanovka'), ensure_ascii=False)}")
+    L.append("```")
+    L += [str(x) for x in (n.get('log') or [])]
+    L.append("```")
 L += ["", "## Pomehi vstrecheno", ""] + [f"- {k}: {v}" for k, v in pomehi.most_common()]
 L += ["", "## Po rabotam", ""] + [f"- seed {r['seed']}: {r['uspeh']}/{r['progonov']}, seriya {r['max_seriya_shagov']}, {r['sekund']} s" for r in po_rabotam]
 with open(os.path.join(dst, 'itog.md'), 'w', encoding='utf-8') as f:

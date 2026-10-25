@@ -1,5 +1,5 @@
 # One training job: several runs of the skill on the practice pages with a disturbance seed.
-param([int]$Seed = 1, [int]$Progonov = 8, [string]$Vyhod = 'rezultat.json')
+param([int]$Seed = 1, [int]$Progonov = 8, [string]$Vyhod = 'rezultat.json', [switch]$Strogo)
 $ErrorActionPreference = 'Continue'
 $koren = Split-Path -Parent $PSScriptRoot
 . (Join-Path $koren 'lib\uia.ps1')
@@ -10,6 +10,18 @@ $stranicy = @('anketa', 'nastrojki', 'zametka', 'parol')
 $vse = @()
 $damp = $null
 $jobSw = [Diagnostics.Stopwatch]::StartNew()
+$vyhodPut = if ([IO.Path]::IsPathRooted($Vyhod)) { $Vyhod } else { Join-Path (Get-Location).Path $Vyhod }
+$utf8 = New-Object System.Text.UTF8Encoding($false)
+# written after every run, so a crash later still leaves the runs done so far
+function Save-Itog([string]$oshibka = '') {
+  $itog = [ordered]@{ seed = $Seed; sekund = [int]$jobSw.Elapsed.TotalSeconds; progony = @($vse); damp = $damp; oshibka = $oshibka }
+  try { $json = $itog | ConvertTo-Json -Depth 9 -ErrorAction Stop }
+  catch {
+    $json = (@{ seed = $Seed; progony = @(); oshibka = ('json: ' + $_.Exception.Message) } | ConvertTo-Json)
+  }
+  [IO.File]::WriteAllText($vyhodPut, $json, $utf8)
+}
+Save-Itog 'start'
 
 function Stop-Lishnee {
   Get-Process chrome, notepad -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
@@ -91,6 +103,12 @@ for ($r = 0; $r -lt $Progonov; $r++) {
   }
   Write-Host ("[{0}/{1}] {2} seed={3} uspeh={4} {5}" -f ($r + 1), $Progonov, $imya, $s, $prov.uspeh, $prov.prichina)
   Stop-Lishnee
+  Save-Itog 'v-processe'
 }
-$itog = [ordered]@{ seed = $Seed; sekund = [int]$jobSw.Elapsed.TotalSeconds; progony = $vse; damp = $damp }
-($itog | ConvertTo-Json -Depth 9) | Out-File -FilePath $Vyhod -Encoding utf8
+Save-Itog ''
+$neudach = @($vse | Where-Object { -not $_.proverka.uspeh }).Count
+$bezSkilla = @($vse | Where-Object { -not $_.skill }).Count
+Write-Host "neudach: $neudach iz $($vse.Count); skill bez rezultata: $bezSkilla"
+# a skill failure on the polygon is not a job failure; only a broken harness is
+if ($Strogo -and ($bezSkilla -gt 0 -or -not (Test-Path $vyhodPut))) { exit 1 }
+exit 0
