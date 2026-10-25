@@ -146,8 +146,23 @@ function Set-Tekst($ctx, $shag, [int]$kusok = 8) {
       if (-not $ctx.EstParol -and (Find-Dialog $ctx.Doc)) { $null = Close-Dialog $ctx; $sboj = $true; break }
       $n = [Math]::Min($k, $ost.Length)
       $ch = $ost.Substring(0, $n)
+      $doVvoda = $nabrano
       Send-Tekst $ch
       $nabrano += $ch; $ost = $ost.Substring($n)
+      if ($ctx.EstParol) {
+        # focus may have jumped into the password field between the check and the keystroke:
+        # if our field did not get the character and focus is now on a password field, undo it there
+        $f2 = Get-Fokus
+        if ((Test-Parol $f2) -and -not (Test-TotZhe $f2 $el)) {
+          $v = Wait-Znachenie $el $nabrano 300
+          if ($v -cne $nabrano) {
+            Send-Klavisha 'Backspace'
+            Add-Pomeha $ctx 'utechka-otmenena'
+            Write-RukiLog 'utechka v parol otmenena'
+          }
+          $sboj = $true; break
+        }
+      }
       if ($k -gt 1 -or $ost.Length -eq 0 -or ($nabrano.Length % 8) -eq 0) {
         $v = Wait-Znachenie $el $nabrano 900
         if ($v -cne $nabrano) { Write-RukiLog "sverka kuska: zhdali $($nabrano.Length), vidim $(([string]$v).Length)"; $sboj = $true; break }

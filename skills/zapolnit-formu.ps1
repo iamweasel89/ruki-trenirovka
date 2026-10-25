@@ -58,8 +58,11 @@ function Invoke-Shag($shag) {
 }
 
 # reconcile all value steps since the last button against the plan; fix what drifted
-function Sync-Forma($polya) {
-  for ($prohod = 1; $prohod -le 3; $prohod++) {
+# a clean pass counts only after a quiet pause: delayed re-renders triggered by our own typing
+# must have fired before the button is pressed
+function Sync-Forma($polya, [int]$tishinaMs = 1600) {
+  $tiho = $false
+  for ($prohod = 1; $prohod -le 6; $prohod++) {
     $ispr = 0
     foreach ($p in $polya) {
       $el = Find-Element $ctx.Doc $p.id $p.metka $p.tip 3000
@@ -72,7 +75,11 @@ function Sync-Forma($polya) {
       $r = Invoke-Shag $p
       if ($r.Status -ne 'ok') { return $r }
     }
-    if ($ispr -eq 0) { return @{ Status = 'ok' } }
+    if ($ispr -eq 0) {
+      if ($tiho -or $polya.Count -eq 0) { return @{ Status = 'ok' } }
+      $tiho = $true
+      Start-Sleep -Milliseconds $tishinaMs
+    } else { $tiho = $false }
   }
   return @{ Status = 'stop'; Prichina = 'sverka-ne-soshlas' }
 }
