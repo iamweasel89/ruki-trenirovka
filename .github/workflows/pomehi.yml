@@ -41,18 +41,28 @@ jobs:
             rezultat-dym.json
             konsol-dym.txt
           if-no-files-found: warn
-      - name: smoke gate (no false success, at least one recovery)
+      - name: smoke verdict (never fails the job; decides whether the matrix runs)
+        id: verdikt
         shell: powershell
         run: |
-          $d = Get-Content -Raw -Encoding UTF8 rezultat-dym.json | ConvertFrom-Json
-          $p = @($d.progony)
-          $lozh = @($p | Where-Object { $_.lozhnyj_uspeh -or $_.utechka }).Count
-          $ok = @($p | Where-Object { $_.proverka.uspeh }).Count
-          Write-Host "dym: ok $ok / $($p.Count), lozhnyh+utechek $lozh"
-          if ($lozh -gt 0 -or $ok -lt 2) { exit 1 }
+          $ErrorActionPreference = 'Continue'
+          $gotovo = 'false'
+          if (Test-Path rezultat-dym.json) {
+            $d = Get-Content -Raw -Encoding UTF8 rezultat-dym.json | ConvertFrom-Json
+            $p = @($d.progony)
+            $lozh = @($p | Where-Object { $_.lozhnyj_uspeh -or $_.utechka }).Count
+            $ok = @($p | Where-Object { $_.proverka.uspeh }).Count
+            Write-Host "dym: ok $ok / $($p.Count), lozhnyh+utechek $lozh"
+            if ($lozh -eq 0 -and $ok -ge 2) { $gotovo = 'true' }
+          }
+          "gotovo=$gotovo" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          exit 0
+    outputs:
+      gotovo: ${{ steps.verdikt.outputs.gotovo }}
 
   matrica:
     needs: dym
+    if: needs.dym.outputs.gotovo == 'true'
     runs-on: windows-latest
     timeout-minutes: 30
     strategy:
@@ -101,7 +111,7 @@ jobs:
         run: |
           git config user.name ci; git config user.email ci@users.noreply.github.com
           git checkout --orphan itog-tmp && git rm -rf . -q
-          mkdir -p konsol && for f in rez/konsol-*.txt; do [ -f "$f" ] && tail -c 20000 "$f" | sed -E 's/\\Users\\[^\\]+/\\Users\\X/g' > "konsol/$(basename "$f")"; done; true
+          mkdir -p konsol && for f in rez/konsol-*.txt; do [ -f "$f" ] && tail -c 20000 "$f" | sed -E 's/[\\]U[s]ers[\\][^\\]+/\\home\\X/g' > "konsol/$(basename "$f")"; done; true
           cp out/itog.json out/itog.md . && git add itog.json itog.md konsol
           git commit -qm "itog-pomehi run $GITHUB_RUN_ID sha $GITHUB_SHA"
           git push -f origin HEAD:itog-pomehi
