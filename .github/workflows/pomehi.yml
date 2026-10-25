@@ -28,12 +28,18 @@ jobs:
       - uses: actions/checkout@v4
       - name: smoke runs
         shell: powershell
-        run: ./ci/progon-pomehi.ps1 -Seed 0 -Progonov 4 -Zhestko -Vyhod "rezultat-dym.json"
+        run: |
+          $ErrorActionPreference = 'Continue'
+          & ./ci/progon-pomehi.ps1 -Seed 0 -Progonov 4 -Zhestko -Vyhod "rezultat-dym.json" *>&1 | Tee-Object -FilePath konsol-dym.txt
+          if (-not (Test-Path rezultat-dym.json)) { exit 1 }
+          exit 0
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: rezultat-dym
-          path: rezultat-dym.json
+          path: |
+            rezultat-dym.json
+            konsol-dym.txt
           if-no-files-found: warn
       - name: smoke gate (no false success, at least one recovery)
         shell: powershell
@@ -58,12 +64,17 @@ jobs:
       - uses: actions/checkout@v4
       - name: runs under disturbances
         shell: powershell
-        run: ./ci/progon-pomehi.ps1 -Seed ${{ matrix.seed }} -Progonov 8 -Vyhod "rezultat-${{ matrix.seed }}.json"
+        run: |
+          $ErrorActionPreference = 'Continue'
+          & ./ci/progon-pomehi.ps1 -Seed ${{ matrix.seed }} -Progonov 8 -Vyhod "rezultat-${{ matrix.seed }}.json" *>&1 | Tee-Object -FilePath "konsol-${{ matrix.seed }}.txt"
+          exit 0
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: rezultat-${{ matrix.seed }}
-          path: rezultat-${{ matrix.seed }}.json
+          path: |
+            rezultat-${{ matrix.seed }}.json
+            konsol-${{ matrix.seed }}.txt
           if-no-files-found: warn
 
   svod:
@@ -90,6 +101,7 @@ jobs:
         run: |
           git config user.name ci; git config user.email ci@users.noreply.github.com
           git checkout --orphan itog-tmp && git rm -rf . -q
-          cp out/itog.json out/itog.md . && git add itog.json itog.md
+          mkdir -p konsol && for f in rez/konsol-*.txt; do [ -f "$f" ] && tail -c 20000 "$f" | sed -E 's/\\Users\\[^\\]+/\\Users\\X/g' > "konsol/$(basename "$f")"; done; true
+          cp out/itog.json out/itog.md . && git add itog.json itog.md konsol
           git commit -qm "itog-pomehi run $GITHUB_RUN_ID sha $GITHUB_SHA"
           git push -f origin HEAD:itog-pomehi
