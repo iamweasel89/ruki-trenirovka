@@ -1,0 +1,139 @@
+{
+ "imya": "dostavka-kurer",
+ "vid": "master",
+ "stranica": {
+  "url_soderzhit": "/polygon/master-dostavka.html",
+  "zagolovok_soderzhit": "Полигон — Доставка"
+ },
+ "knopki": {
+  "dalee": {
+   "metka": "Далее"
+  },
+  "nazad": {
+   "metka": "Назад"
+  }
+ },
+ "povtoryat_pri": [
+  "попробуйте ещё раз"
+ ],
+ "shagi": [
+  {
+   "zagolovok": "Контакты",
+   "polya": [
+    {
+     "tip": "tekst",
+     "id": "imya",
+     "metka": "Имя",
+     "znachenie": "Ярослава"
+    },
+    {
+     "tip": "tekst",
+     "id": "telefon",
+     "metka": "Телефон",
+     "znachenie": "0999 000 111",
+     "pri_oshibke": [
+      {
+       "soderzhit": "международном формате",
+       "znachenie": "+99900000111"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "zagolovok": "Способ получения",
+   "polya": [
+    {
+     "tip": "vybor",
+     "id": "sposob_kurer",
+     "gruppa": "sposob",
+     "metka": "Курьер",
+     "v_svodke": "Способ получения",
+     "znachenie": "kurer"
+    }
+   ]
+  },
+  {
+   "zagolovok": "Адрес доставки",
+   "polya": [
+    {
+     "tip": "tekst",
+     "id": "ulica",
+     "metka": "Улица и дом",
+     "znachenie": "Учебная 7, кв. 12"
+    },
+    {
+     "tip": "tekst",
+     "id": "gorod",
+     "metka": "Город",
+     "znachenie": "Тестоград"
+    },
+    {
+     "tip": "tekst",
+     "id": "indeks",
+     "metka": "Индекс",
+     "znachenie": "000 01",
+     "pri_oshibke": [
+      {
+       "soderzhit": "пять цифр",
+       "znachenie": "00001"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "zagolovok": "Время и пожелания",
+   "polya": [
+    {
+     "tip": "vybor",
+     "id": "vremya_vecher",
+     "gruppa": "vremya",
+     "metka": "Вечер",
+     "v_svodke": "Время доставки",
+     "znachenie": "vecher"
+    },
+    {
+     "tip": "flazhok",
+     "id": "pozvonit",
+     "metka": "Позвонить заранее",
+     "znachenie": true
+    },
+    {
+     "tip": "tekst",
+     "id": "kommentarij",
+     "metka": "Комментарий курьеру",
+     "znachenie": "Домофон 12, не звонить в дверь"
+    }
+   ]
+  }
+ ],
+ "svodka": {
+  "zagolovok": "Проверьте перед отправкой",
+  "da": "да",
+  "net": "нет",
+  "pusto": "—"
+ },
+ "final": {
+  "metka": "Подтвердить заказ",
+  "posle": {
+   "tip": "tekst",
+   "id": "itog",
+   "metka": "Итог"
+  }
+ },
+ "proverka": {
+  "dannye": {
+   "imya": "Ярослава",
+   "telefon": "+99900000111",
+   "sposob": "kurer",
+   "ulica": "Учебная 7, кв. 12",
+   "gorod": "Тестоград",
+   "indeks": "00001",
+   "vremya": "vecher",
+   "pozvonit": true,
+   "kommentarij": "Домофон 12, не звонить в дверь"
+  },
+  "ozhidaetsya_ostanovka": null
+ }
+}

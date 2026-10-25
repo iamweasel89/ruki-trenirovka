@@ -1,0 +1,81 @@
+{
+ "imya": "registraciya-stop",
+ "vid": "master",
+ "stranica": {
+  "url_soderzhit": "/polygon/master-registraciya.html",
+  "zagolovok_soderzhit": "Полигон — Регистрация"
+ },
+ "knopki": {
+  "dalee": {
+   "metka": "Далее"
+  },
+  "nazad": {
+   "metka": "Назад"
+  }
+ },
+ "povtoryat_pri": [
+  "попробуйте ещё раз"
+ ],
+ "shagi": [
+  {
+   "zagolovok": "Учётная запись",
+   "polya": [
+    {
+     "tip": "tekst",
+     "id": "login",
+     "metka": "Логин",
+     "znachenie": "admin"
+    },
+    {
+     "tip": "tekst",
+     "id": "pokaz_imya",
+     "metka": "Имя для показа",
+     "znachenie": "Администратор"
+    }
+   ]
+  },
+  {
+   "zagolovok": "Язык и уведомления",
+   "polya": [
+    {
+     "tip": "vybor",
+     "id": "yazyk_ru",
+     "gruppa": "yazyk",
+     "metka": "Русский",
+     "v_svodke": "Язык",
+     "znachenie": "ru"
+    },
+    {
+     "tip": "flazhok",
+     "id": "sms",
+     "metka": "Уведомления по SMS",
+     "znachenie": false
+    },
+    {
+     "tip": "flazhok",
+     "id": "push",
+     "metka": "Уведомления в приложении",
+     "znachenie": true
+    }
+   ]
+  }
+ ],
+ "svodka": {
+  "zagolovok": "Проверьте перед отправкой",
+  "da": "да",
+  "net": "нет",
+  "pusto": "—"
+ },
+ "final": {
+  "metka": "Создать учётную запись",
+  "posle": {
+   "tip": "tekst",
+   "id": "itog",
+   "metka": "Итог"
+  }
+ },
+ "proverka": {
+  "dannye": {},
+  "ozhidaetsya_ostanovka": "oshibka-ne-predusmotrena"
+ }
+}

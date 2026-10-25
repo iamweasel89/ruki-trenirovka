@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><title>Полигон — Доставка</title>
+<link rel="stylesheet" href="stil.css"></head>
+<body>
+<header><b>Полигон</b><input id="poisk" type="text" aria-label="Поиск по сайту" placeholder="Поиск"></header>
+<main>
+<h1>Оформление доставки</h1>
+<p class="zagruzka" id="zagruzka">Загрузка…</p>
+<form id="master" hidden onsubmit="return false">
+  <section data-shag data-zagolovok="Контакты" hidden>
+    <h2 class="zag"></h2>
+    <div class="oshibki"></div>
+    <label>Имя <input id="imya" type="text" aria-label="Имя"></label>
+    <label>Телефон <input id="telefon" type="text" aria-label="Телефон" data-shablon="^\+\d{9,15}$" data-oshibka="Телефон укажите в международном формате: знак + и цифры без пробелов"></label>
+    <div class="knopki-shaga"><button type="button" class="nazad">Назад</button><button type="button" class="dalee">Далее</button></div>
+  </section>
+  <section data-shag data-zagolovok="Способ получения" hidden>
+    <h2 class="zag"></h2>
+    <div class="oshibki"></div>
+    <div class="gruppa" role="radiogroup" aria-label="Способ получения" data-imya="sposob"><p>Способ получения</p><label><input type="radio" name="sposob" id="sposob_kurer" value="kurer" aria-label="Курьер"> Курьер</label><label><input type="radio" name="sposob" id="sposob_samovyvoz" value="samovyvoz" aria-label="Самовывоз"> Самовывоз</label></div>
+    <div class="knopki-shaga"><button type="button" class="nazad">Назад</button><button type="button" class="dalee">Далее</button></div>
+  </section>
+  <section data-shag data-zagolovok="Адрес доставки" data-esli="sposob=kurer" hidden>
+    <h2 class="zag"></h2>
+    <div class="oshibki"></div>
+    <label>Улица и дом <input id="ulica" type="text" aria-label="Улица и дом"></label>
+    <label>Город <input id="gorod" type="text" aria-label="Город"></label>
+    <label>Индекс <input id="indeks" type="text" aria-label="Индекс" data-shablon="^\d{5}$" data-oshibka="Индекс — ровно пять цифр, без пробела"></label>
+    <div class="knopki-shaga"><button type="button" class="nazad">Назад</button><button type="button" class="dalee">Далее</button></div>
+  </section>
+  <section data-shag data-zagolovok="Пункт выдачи" data-esli="sposob=samovyvoz" hidden>
+    <h2 class="zag"></h2>
+    <div class="oshibki"></div>
+    <div class="gruppa" role="radiogroup" aria-label="Пункт выдачи" data-imya="punkt"><p>Пункт выдачи</p><label><input type="radio" name="punkt" id="punkt_vokzal" value="vokzal" aria-label="У вокзала"> У вокзала</label><label><input type="radio" name="punkt" id="punkt_centr" value="centr" aria-label="В центре"> В центре</label><label><input type="radio" name="punkt" id="punkt_okraina" value="okraina" aria-label="На окраине"> На окраине</label></div>
+    <div class="knopki-shaga"><button type="button" class="nazad">Назад</button><button type="button" class="dalee">Далее</button></div>
+  </section>
+  <section data-shag data-zagolovok="Время и пожелания" hidden>
+    <h2 class="zag"></h2>
+    <div class="oshibki"></div>
+    <div class="gruppa" role="radiogroup" aria-label="Время доставки" data-imya="vremya"><p>Время доставки</p><label><input type="radio" name="vremya" id="vremya_utro" value="utro" aria-label="Утро"> Утро</label><label><input type="radio" name="vremya" id="vremya_vecher" value="vecher" aria-label="Вечер"> Вечер</label></div>
+    <label><input type="checkbox" id="pozvonit" aria-label="Позвонить заранее"> Позвонить заранее</label>
+    <label>Комментарий курьеру <input id="kommentarij" type="text" aria-label="Комментарий курьеру" data-neobyaz></label>
+    <div class="knopki-shaga"><button type="button" class="nazad">Назад</button><button type="button" class="dalee">Далее</button></div>
+  </section>
+  <section data-svodka data-zagolovok="Проверьте перед отправкой" hidden>
+    <h2 class="zag"></h2>
+    <div class="oshibki"></div>
+    <ul id="svodka-spisok"></ul>
+    <div class="knopki-shaga"><button type="button" class="nazad">Назад</button><button type="button" class="final">Подтвердить заказ</button></div>
+  </section>
+</form>
+</main>
+<script src="pomehi.js"></script>
+<script>window.MASTER_DOP = function (v) { return [v('sposob') === 'kurer' ? 'Стоимость доставки: 3,50 €' : 'Стоимость доставки: бесплатно']; };</script>
+<script src="master.js"></script>
+</body></html>

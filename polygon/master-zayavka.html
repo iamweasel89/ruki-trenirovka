@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><title>Полигон — Заявка</title>
+<link rel="stylesheet" href="stil.css"></head>
+<body>
+<header><b>Полигон</b><input id="poisk" type="text" aria-label="Поиск по сайту" placeholder="Поиск"></header>
+<main>
+<h1>Заявка на поддержку</h1>
+<p class="zagruzka" id="zagruzka">Загрузка…</p>
+<form id="master" hidden onsubmit="return false">
+  <section data-shag data-zagolovok="Тип заявителя" hidden>
+    <h2 class="zag"></h2>
+    <div class="oshibki"></div>
+    <div class="gruppa" role="radiogroup" aria-label="Тип заявителя" data-imya="zayavitel"><p>Тип заявителя</p><label><input type="radio" name="zayavitel" id="zayavitel_chastnoe" value="chastnoe" aria-label="Частное лицо"> Частное лицо</label><label><input type="radio" name="zayavitel" id="zayavitel_org" value="org" aria-label="Организация"> Организация</label></div>
+    <div class="knopki-shaga"><button type="button" class="nazad">Назад</button><button type="button" class="dalee">Далее</button></div>
+  </section>
+  <section data-shag data-zagolovok="Личные данные" data-esli="zayavitel=chastnoe" hidden>
+    <h2 class="zag"></h2>
+    <div class="oshibki"></div>
+    <label>Имя <input id="imya" type="text" aria-label="Имя"></label>
+    <label>Фамилия <input id="familiya" type="text" aria-label="Фамилия"></label>
+    <label>Год рождения <input id="god" type="number" aria-label="Год рождения" data-min="1900" data-max="2010" data-oshibka="Год рождения — число от 1900 до 2010"></label>
+    <label>Телефон <input id="telefon_l" type="text" aria-label="Телефон" data-shablon="^\+\d{9,15}$" data-oshibka="Телефон укажите в международном формате: знак + и цифры без пробелов"></label>
+    <div class="knopki-shaga"><button type="button" class="nazad">Назад</button><button type="button" class="dalee">Далее</button></div>
+  </section>
+  <section data-shag data-zagolovok="Организация" data-esli="zayavitel=org" hidden>
+    <h2 class="zag"></h2>
+    <div class="oshibki"></div>
+    <label>Название организации <input id="nazvanie" type="text" aria-label="Название организации"></label>
+    <label>ИЧО <input id="ico" type="text" aria-label="ИЧО" data-shablon="^\d{8}$" data-oshibka="ИЧО — ровно восемь цифр"></label>
+    <label>Контактное лицо <input id="kontakt" type="text" aria-label="Контактное лицо"></label>
+    <label>Телефон организации <input id="telefon_o" type="text" aria-label="Телефон организации" data-shablon="^\+\d{9,15}$" data-oshibka="Телефон укажите в международном формате: знак + и цифры без пробелов"></label>
+    <div class="knopki-shaga"><button type="button" class="nazad">Назад</button><button type="button" class="dalee">Далее</button></div>
+  </section>
+  <section data-shag data-zagolovok="Суть заявки" hidden>
+    <h2 class="zag"></h2>
+    <div class="oshibki"></div>
+    <label>Тема <input id="tema" type="text" aria-label="Тема"></label>
+    <label>Сумма, € <input id="summa" type="number" aria-label="Сумма, €" data-min="1" data-max="500" data-oshibka="Сумма — не больше 500 €; большие суммы — отдельной заявкой"></label>
+    <label>Описание <input id="opisanie" type="text" aria-label="Описание"></label>
+    <div class="knopki-shaga"><button type="button" class="nazad">Назад</button><button type="button" class="dalee">Далее</button></div>
+  </section>
+  <section data-shag data-zagolovok="Срочность" hidden>
+    <h2 class="zag"></h2>
+    <div class="oshibki"></div>
+    <div class="gruppa" role="radiogroup" aria-label="Срочность" data-imya="srochnost"><p>Срочность</p><label><input type="radio" name="srochnost" id="srochnost_obychnaya" value="obychnaya" aria-label="Обычная"> Обычная</label><label><input type="radio" name="srochnost" id="srochnost_srochnaya" value="srochnaya" aria-label="Срочная"> Срочная</label></div>
+    <div class="knopki-shaga"><button type="button" class="nazad">Назад</button><button type="button" class="dalee">Далее</button></div>
+  </section>
+  <section data-shag data-zagolovok="Причина срочности" data-esli="srochnost=srochnaya" hidden>
+    <h2 class="zag"></h2>
+    <div class="oshibki"></div>
+    <label>Почему срочно <input id="prichina" type="text" aria-label="Почему срочно"></label>
+    <div class="knopki-shaga"><button type="button" class="nazad">Назад</button><button type="button" class="dalee">Далее</button></div>
+  </section>
+  <section data-shag data-zagolovok="Согласия" hidden>
+    <h2 class="zag"></h2>
+    <div class="oshibki"></div>
+    <label><input type="checkbox" id="soglasie" aria-label="Согласен на обработку данных" data-obyaz data-oshibka="Без согласия на обработку данных заявку не принять"> Согласен на обработку данных</label>
+    <label><input type="checkbox" id="novosti" aria-label="Присылать новости"> Присылать новости</label>
+    <div class="knopki-shaga"><button type="button" class="nazad">Назад</button><button type="button" class="dalee">Далее</button></div>
+  </section>
+  <section data-svodka data-zagolovok="Проверьте перед отправкой" hidden>
+    <h2 class="zag"></h2>
+    <div class="oshibki"></div>
+    <ul id="svodka-spisok"></ul>
+    <div class="knopki-shaga"><button type="button" class="nazad">Назад</button><button type="button" class="final">Отправить заявку</button></div>
+  </section>
+</form>
+</main>
+<script src="pomehi.js"></script>
+<script src="master.js"></script>
+</body></html>

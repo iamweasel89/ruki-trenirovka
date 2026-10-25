@@ -1,0 +1,118 @@
+name: trenirovka-master
+on:
+  push:
+    branches: [trener-master]
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+concurrency:
+  group: master
+  cancel-in-progress: true
+jobs:
+  gigiena:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: public hygiene check
+        shell: pwsh
+        run: ./ci/proverka-gigieny.ps1
+
+  # fast smoke: one job, every wizard plan once; skill failures never fail the job
+  dym:
+    needs: gigiena
+    runs-on: windows-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - name: smoke runs
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Continue'
+          try { & ./ci/progon-master.ps1 -Seed 0 -Progonov 6 -Vyhod "rezultat-dym.json" *>&1 | Tee-Object -FilePath konsol-dym.txt } catch { ($_ | Out-String) | Tee-Object -FilePath konsol-dym.txt -Append }
+          if (-not (Test-Path rezultat-dym.json)) { exit 1 }
+          exit 0
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rezultat-dym
+          path: |
+            rezultat-dym.json
+            konsol-dym.txt
+          if-no-files-found: warn
+      - name: smoke verdict (never fails the job; decides whether the matrix runs)
+        id: verdikt
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Continue'
+          $gotovo = 'false'
+          if (Test-Path rezultat-dym.json) {
+            $d = Get-Content -Raw -Encoding UTF8 rezultat-dym.json | ConvertFrom-Json
+            $p = @($d.progony)
+            $lozh = @($p | Where-Object { $_.proverka.lozhnyj_uspeh -or $_.proverka.rano_otpravleno }).Count
+            $ok = @($p | Where-Object { $_.proverka.uspeh }).Count
+            Write-Host "dym: ok $ok / $($p.Count), lozhnyh $lozh"
+            if ($lozh -eq 0 -and $ok -ge 3) { $gotovo = 'true' }
+          }
+          "gotovo=$gotovo" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          exit 0
+    outputs:
+      gotovo: ${{ steps.verdikt.outputs.gotovo }}
+
+  matrica:
+    needs: dym
+    if: needs.dym.outputs.gotovo == 'true'
+    runs-on: windows-latest
+    timeout-minutes: 50
+    strategy:
+      fail-fast: false
+      max-parallel: 5
+      matrix:
+        seed: [1, 2, 3, 4, 5]
+    steps:
+      - uses: actions/checkout@v4
+      - name: wizard runs under disturbances
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Continue'
+          try { & ./ci/progon-master.ps1 -Seed ${{ matrix.seed }} -Progonov 6 -Vyhod "rezultat-${{ matrix.seed }}.json" *>&1 | Tee-Object -FilePath "konsol-${{ matrix.seed }}.txt" } catch { ($_ | Out-String) | Tee-Object -FilePath "konsol-${{ matrix.seed }}.txt" -Append }
+          exit 0
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rezultat-${{ matrix.seed }}
+          path: |
+            rezultat-${{ matrix.seed }}.json
+            konsol-${{ matrix.seed }}.txt
+          if-no-files-found: warn
+
+  svod:
+    needs: [dym, matrica]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: rezultat-*
+          path: rez
+          merge-multiple: true
+      - name: runner minutes
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          curl -sS -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/jobs?per_page=50" > jobs.json || echo '{}' > jobs.json
+      - name: aggregate (matrix if it ran, else the smoke)
+        run: |
+          if ls rez/rezultat-[0-9]*.json >/dev/null 2>&1; then mkdir -p rezm && cp rez/rezultat-[0-9]*.json rezm/ && python3 ci/svod-master.py rezm out jobs.json; else python3 ci/svod-master.py rez out jobs.json; fi
+      - name: publish to branch itog-master
+        run: |
+          git config user.name ci; git config user.email ci@users.noreply.github.com
+          git checkout --orphan itog-tmp && git rm -rf . -q
+          mkdir -p konsol && for f in rez/konsol-*.txt; do [ -f "$f" ] && python3 -c "import sys;b=open(sys.argv[1],'rb').read();t=b.decode('utf-16') if b[:2] in (b'\\xff\\xfe',b'\\xfe\\xff') else b.decode('utf-8','replace');sys.stdout.write(t[-15000:])" "$f" | sed -E 's/[\\]U[s]ers[\\][^\\]+/\\home\\X/g' > "konsol/$(basename "$f")"; done; true
+          cp out/itog.json out/itog.md . && git add itog.json itog.md konsol
+          git commit -qm "itog-master run $GITHUB_RUN_ID sha $GITHUB_SHA"
+          git push -f origin HEAD:itog-master

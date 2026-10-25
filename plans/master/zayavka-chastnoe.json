@@ -1,0 +1,152 @@
+{
+ "imya": "zayavka-chastnoe",
+ "vid": "master",
+ "stranica": {
+  "url_soderzhit": "/polygon/master-zayavka.html",
+  "zagolovok_soderzhit": "Полигон — Заявка"
+ },
+ "knopki": {
+  "dalee": {
+   "metka": "Далее"
+  },
+  "nazad": {
+   "metka": "Назад"
+  }
+ },
+ "povtoryat_pri": [
+  "попробуйте ещё раз"
+ ],
+ "shagi": [
+  {
+   "zagolovok": "Тип заявителя",
+   "polya": [
+    {
+     "tip": "vybor",
+     "id": "zayavitel_chastnoe",
+     "gruppa": "zayavitel",
+     "metka": "Частное лицо",
+     "v_svodke": "Тип заявителя",
+     "znachenie": "chastnoe"
+    }
+   ]
+  },
+  {
+   "zagolovok": "Личные данные",
+   "polya": [
+    {
+     "tip": "tekst",
+     "id": "imya",
+     "metka": "Имя",
+     "znachenie": "Мирон"
+    },
+    {
+     "tip": "tekst",
+     "id": "familiya",
+     "metka": "Фамилия",
+     "znachenie": "Огнев-Сокол"
+    },
+    {
+     "tip": "chislo",
+     "id": "god",
+     "metka": "Год рождения",
+     "znachenie": "1984"
+    },
+    {
+     "tip": "tekst",
+     "id": "telefon_l",
+     "metka": "Телефон",
+     "znachenie": "+999 000 00 444",
+     "pri_oshibke": [
+      {
+       "soderzhit": "международном формате",
+       "znachenie": "+9990000444"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "zagolovok": "Суть заявки",
+   "polya": [
+    {
+     "tip": "tekst",
+     "id": "tema",
+     "metka": "Тема",
+     "znachenie": "Шум в трубах"
+    },
+    {
+     "tip": "chislo",
+     "id": "summa",
+     "metka": "Сумма, €",
+     "znachenie": "120"
+    },
+    {
+     "tip": "tekst",
+     "id": "opisanie",
+     "metka": "Описание",
+     "znachenie": "Гудит по ночам, третий этаж"
+    }
+   ]
+  },
+  {
+   "zagolovok": "Срочность",
+   "polya": [
+    {
+     "tip": "vybor",
+     "id": "srochnost_obychnaya",
+     "gruppa": "srochnost",
+     "metka": "Обычная",
+     "v_svodke": "Срочность",
+     "znachenie": "obychnaya"
+    }
+   ]
+  },
+  {
+   "zagolovok": "Согласия",
+   "polya": [
+    {
+     "tip": "flazhok",
+     "id": "soglasie",
+     "metka": "Согласен на обработку данных",
+     "znachenie": true
+    },
+    {
+     "tip": "flazhok",
+     "id": "novosti",
+     "metka": "Присылать новости",
+     "znachenie": true
+    }
+   ]
+  }
+ ],
+ "svodka": {
+  "zagolovok": "Проверьте перед отправкой",
+  "da": "да",
+  "net": "нет",
+  "pusto": "—"
+ },
+ "final": {
+  "metka": "Отправить заявку",
+  "posle": {
+   "tip": "tekst",
+   "id": "itog",
+   "metka": "Итог"
+  }
+ },
+ "proverka": {
+  "dannye": {
+   "zayavitel": "chastnoe",
+   "imya": "Мирон",
+   "familiya": "Огнев-Сокол",
+   "god": "1984",
+   "telefon_l": "+9990000444",
+   "tema": "Шум в трубах",
+   "summa": "120",
+   "opisanie": "Гудит по ночам, третий этаж",
+   "srochnost": "obychnaya",
+   "soglasie": true,
+   "novosti": true
+  },
+  "ozhidaetsya_ostanovka": null
+ }
+}

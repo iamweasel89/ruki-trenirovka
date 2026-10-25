@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><title>Полигон — Регистрация</title>
+<link rel="stylesheet" href="stil.css"></head>
+<body>
+<header><b>Полигон</b><input id="poisk" type="text" aria-label="Поиск по сайту" placeholder="Поиск"></header>
+<main>
+<h1>Регистрация</h1>
+<p class="zagruzka" id="zagruzka">Загрузка…</p>
+<form id="master" hidden onsubmit="return false">
+  <section data-shag data-zagolovok="Учётная запись" hidden>
+    <h2 class="zag"></h2>
+    <div class="oshibki"></div>
+    <label>Логин <input id="login" type="text" aria-label="Логин" data-shablon="^[a-z0-9-]{3,20}$" data-oshibka="Логин — латиница, цифры и дефис, от 3 до 20 знаков" data-zanyato="admin,test,ivan,root" data-zanyato-oshibka="Этот логин уже занят, выберите другой"></label>
+    <label>Имя для показа <input id="pokaz_imya" type="text" aria-label="Имя для показа"></label>
+    <div class="knopki-shaga"><button type="button" class="nazad">Назад</button><button type="button" class="dalee">Далее</button></div>
+  </section>
+  <section data-shag data-zagolovok="Язык и уведомления" hidden>
+    <h2 class="zag"></h2>
+    <div class="oshibki"></div>
+    <div class="gruppa" role="radiogroup" aria-label="Язык" data-imya="yazyk"><p>Язык</p><label><input type="radio" name="yazyk" id="yazyk_ru" value="ru" aria-label="Русский"> Русский</label><label><input type="radio" name="yazyk" id="yazyk_sk" value="sk" aria-label="Словацкий"> Словацкий</label><label><input type="radio" name="yazyk" id="yazyk_en" value="en" aria-label="Английский"> Английский</label></div>
+    <label><input type="checkbox" id="sms" aria-label="Уведомления по SMS"> Уведомления по SMS</label>
+    <label><input type="checkbox" id="push" aria-label="Уведомления в приложении"> Уведомления в приложении</label>
+    <div class="knopki-shaga"><button type="button" class="nazad">Назад</button><button type="button" class="dalee">Далее</button></div>
+  </section>
+  <section data-shag data-zagolovok="Номер для SMS" data-esli="#sms" hidden>
+    <h2 class="zag"></h2>
+    <div class="oshibki"></div>
+    <label>Телефон <input id="telefon" type="text" aria-label="Телефон" data-shablon="^\+\d{9,15}$" data-oshibka="Телефон укажите в международном формате: знак + и цифры без пробелов"></label>
+    <div class="knopki-shaga"><button type="button" class="nazad">Назад</button><button type="button" class="dalee">Далее</button></div>
+  </section>
+  <section data-svodka data-zagolovok="Проверьте перед отправкой" hidden>
+    <h2 class="zag"></h2>
+    <div class="oshibki"></div>
+    <ul id="svodka-spisok"></ul>
+    <div class="knopki-shaga"><button type="button" class="nazad">Назад</button><button type="button" class="final">Создать учётную запись</button></div>
+  </section>
+</form>
+</main>
+<script src="pomehi.js"></script>
+<script src="master.js"></script>
+</body></html>

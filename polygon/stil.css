@@ -11,3 +11,6 @@ button:disabled { opacity: .5; }
 .modal-fon { position: fixed; inset: 0; background: rgba(0,0,0,.45); display: flex; align-items: center; justify-content: center; }
 .modal { background: #fff; padding: 20px 28px; border-radius: 6px; }
 .zagruzka { color: #777; }
+.oshibka { color: #a01010; background: #fde8e8; padding: 6px 10px; margin: 6px 0; }
+.gruppa label { display: inline-block; margin-right: 14px; }
+.knopki-shaga { display: flex; gap: 12px; }

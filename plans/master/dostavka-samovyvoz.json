@@ -1,0 +1,121 @@
+{
+ "imya": "dostavka-samovyvoz",
+ "vid": "master",
+ "stranica": {
+  "url_soderzhit": "/polygon/master-dostavka.html",
+  "zagolovok_soderzhit": "Полигон — Доставка"
+ },
+ "knopki": {
+  "dalee": {
+   "metka": "Далее"
+  },
+  "nazad": {
+   "metka": "Назад"
+  }
+ },
+ "povtoryat_pri": [
+  "попробуйте ещё раз"
+ ],
+ "shagi": [
+  {
+   "zagolovok": "Контакты",
+   "polya": [
+    {
+     "tip": "tekst",
+     "id": "imya",
+     "metka": "Имя",
+     "znachenie": "Богдан Ли"
+    },
+    {
+     "tip": "tekst",
+     "id": "telefon",
+     "metka": "Телефон",
+     "znachenie": "+99900000222",
+     "pri_oshibke": [
+      {
+       "soderzhit": "международном формате",
+       "znachenie": "+99900000111"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "zagolovok": "Способ получения",
+   "polya": [
+    {
+     "tip": "vybor",
+     "id": "sposob_samovyvoz",
+     "gruppa": "sposob",
+     "metka": "Самовывоз",
+     "v_svodke": "Способ получения",
+     "znachenie": "samovyvoz"
+    }
+   ]
+  },
+  {
+   "zagolovok": "Пункт выдачи",
+   "polya": [
+    {
+     "tip": "vybor",
+     "id": "punkt_centr",
+     "gruppa": "punkt",
+     "metka": "В центре",
+     "v_svodke": "Пункт выдачи",
+     "znachenie": "centr"
+    }
+   ]
+  },
+  {
+   "zagolovok": "Время и пожелания",
+   "polya": [
+    {
+     "tip": "vybor",
+     "id": "vremya_utro",
+     "gruppa": "vremya",
+     "metka": "Утро",
+     "v_svodke": "Время доставки",
+     "znachenie": "utro"
+    },
+    {
+     "tip": "flazhok",
+     "id": "pozvonit",
+     "metka": "Позвонить заранее",
+     "znachenie": false
+    },
+    {
+     "tip": "tekst",
+     "id": "kommentarij",
+     "metka": "Комментарий курьеру",
+     "znachenie": ""
+    }
+   ]
+  }
+ ],
+ "svodka": {
+  "zagolovok": "Проверьте перед отправкой",
+  "da": "да",
+  "net": "нет",
+  "pusto": "—"
+ },
+ "final": {
+  "metka": "Подтвердить заказ",
+  "posle": {
+   "tip": "tekst",
+   "id": "itog",
+   "metka": "Итог"
+  }
+ },
+ "proverka": {
+  "dannye": {
+   "imya": "Богдан Ли",
+   "telefon": "+99900000222",
+   "sposob": "samovyvoz",
+   "punkt": "centr",
+   "vremya": "utro",
+   "pozvonit": false,
+   "kommentarij": ""
+  },
+  "ozhidaetsya_ostanovka": null
+ }
+}
