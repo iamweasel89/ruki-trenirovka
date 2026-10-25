@@ -69,9 +69,8 @@ function Test-Utechka {
 # file dialogs of any browser process, independent of the skill's own window
 function Get-OstavlennyeDialogi {
   $res = @()
-  foreach ($p in @(Get-Process chrome -ErrorAction SilentlyContinue)) {
-    foreach ($h in @([RukiDialog]::Dialogi([uint32]$p.Id))) { if (Test-DialogFajla $h) { $res += $h } }
-  }
+  $pidy = @(Get-Process chrome -ErrorAction SilentlyContinue | ForEach-Object { [uint32]$_.Id })
+  foreach ($h in @([RukiDialog]::VseDialogi())) { if (($pidy -contains [RukiDialog]::Pid($h)) -and (Test-DialogFajla $h)) { $res += $h } }
   return $res
 }
 
@@ -162,7 +161,7 @@ for ($r = 0; $r -lt $Progonov; $r++) {
   $ost = @(Get-OstavlennyeDialogi)
   if ($ost.Count) {
     $prov.dialog_ostavlen = $true
-    if (-not $damp) { try { $damp = (Get-DampDereva ($AE::FromHandle($ost[0])) 0 8) -join "`n" } catch {} }
+    if (-not $damp) { try { $damp = (@(Get-DampDereva ($AE::FromHandle($ost[0])) 0 9) | Where-Object { $_ -notmatch 'ListItem|System.ItemNameDisplay' }) -join "`n" } catch {} }
     foreach ($h in $ost) { $null = Close-DialogFajla $h }
   }
   foreach ($w in @(Get-OknaBrauzera)) { if ([RukiOkno]::IsIconic($w.Hwnd)) { $null = [RukiOkno]::ShowWindow($w.Hwnd, 9) } }

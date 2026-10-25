@@ -43,6 +43,15 @@ public static class RukiDialog {
     }, IntPtr.Zero);
     return res.ToArray();
   }
+  // all top-level #32770 of any process
+  public static IntPtr[] VseDialogi() {
+    List<IntPtr> res = new List<IntPtr>();
+    EnumWindows(delegate (IntPtr h, IntPtr l) {
+      if (Klass(h) == "#32770") res.Add(h);
+      return true;
+    }, IntPtr.Zero);
+    return res.ToArray();
+  }
   public static bool Klik(IntPtr knopka) { return PostMessage(knopka, 0x00F5, IntPtr.Zero, IntPtr.Zero); }
   public static bool Komanda(IntPtr dlg, int id) { return PostMessage(dlg, 0x0111, (IntPtr)id, IntPtr.Zero); }
   public static bool Zakryt(IntPtr h) { return PostMessage(h, 0x0010, IntPtr.Zero, IntPtr.Zero); }
@@ -68,16 +77,39 @@ function Test-DialogFajla([IntPtr]$h) {
   } catch { return $false }
 }
 
-# open file dialogs of the browser that owns window $hwnd
+# processes of the same program as the window (the browser may host its file dialog
+# in a separate utility process, not in the process that owns the window)
+$script:KeshPidov = @{}
+function Get-PidyProgrammy([IntPtr]$hwnd) {
+  $pid0 = [RukiDialog]::Pid($hwnd)
+  $k = "$pid0"
+  if ($KeshPidov.ContainsKey($k) -and ([Environment]::TickCount - $KeshPidov[$k].T) -lt 3000) { return $KeshPidov[$k].P }
+  $pidy = @($pid0)
+  try {
+    $imya = (Get-Process -Id $pid0 -ErrorAction Stop).ProcessName
+    $pidy += @(Get-Process -Name $imya -ErrorAction SilentlyContinue | ForEach-Object { [uint32]$_.Id })
+  } catch {}
+  $KeshPidov[$k] = @{ T = [Environment]::TickCount; P = $pidy }
+  return $pidy
+}
+
+# open file dialogs of the browser that owns window $hwnd: owned by that window,
+# or belonging to any process of the same program
 function Get-DialogiFajla([IntPtr]$hwnd) {
   if ($hwnd -eq [IntPtr]::Zero) { return @() }
-  $pid0 = [RukiDialog]::Pid($hwnd)
-  return @([RukiDialog]::Dialogi($pid0) | Where-Object { Test-DialogFajla $_ })
+  $pidy = Get-PidyProgrammy $hwnd
+  $res = @()
+  foreach ($h in [RukiDialog]::VseDialogi()) {
+    $vl = [RukiDialog]::Vladelec($h)
+    $nash = ($vl -eq $hwnd) -or ($pidy -contains [RukiDialog]::Pid($h))
+    if ($nash -and (Test-DialogFajla $h)) { $res += $h }
+  }
+  return $res
 }
 
 # message boxes owned by a dialog (e.g. "file not found")
 function Get-SoobshcheniyaDialoga([IntPtr]$dlg) {
-  return @([RukiDialog]::Dialogi([RukiDialog]::Pid($dlg)) | Where-Object { [RukiDialog]::Vladelec($_) -eq $dlg })
+  return @([RukiDialog]::VseDialogi() | Where-Object { [RukiDialog]::Vladelec($_) -eq $dlg })
 }
 
 function Wait-DialogFajla([IntPtr]$hwnd, [int]$TimeoutMs = 5000) {
