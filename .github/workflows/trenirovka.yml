@@ -19,7 +19,7 @@ jobs:
   smoke:
     needs: gigiena
     runs-on: windows-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - name: fast smoke, one run of each page, fails only if the harness is broken

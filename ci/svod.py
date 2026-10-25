@@ -66,7 +66,7 @@ for rb in raboty:
         elif not expected_stop and sk.get('ostanovka'):
             seriya = 0
     serii_max.append(best)
-    po_rabotam.append({'seed': rb.get('seed'), 'progonov': len(progony), 'uspeh': u, 'max_seriya_shagov': best, 'sekund': rb.get('sekund')})
+    po_rabotam.append({'seed': rb.get('seed'), 'progonov': len(progony), 'uspeh': u, 'max_seriya_shagov': best, 'sekund': rb.get('sekund'), 'oshibka': rb.get('oshibka')})
 
 minuty = None
 if jobs_api and os.path.exists(jobs_api):
@@ -118,7 +118,7 @@ for k, n in pervye.items():
     L += [str(x) for x in (n.get('log') or [])]
     L.append("```")
 L += ["", "## Pomehi vstrecheno", ""] + [f"- {k}: {v}" for k, v in pomehi.most_common()]
-L += ["", "## Po rabotam", ""] + [f"- seed {r['seed']}: {r['uspeh']}/{r['progonov']}, seriya {r['max_seriya_shagov']}, {r['sekund']} s" for r in po_rabotam]
+L += ["", "## Po rabotam", ""] + [f"- seed {r['seed']}: {r['uspeh']}/{r['progonov']}, seriya {r['max_seriya_shagov']}, {r['sekund']} s" + (f", oshibka garnesa: {r['oshibka']}" if r.get('oshibka') else '') for r in po_rabotam]
 with open(os.path.join(dst, 'itog.md'), 'w', encoding='utf-8') as f:
     f.write('\n'.join(L) + '\n')
 print('\n'.join(L))

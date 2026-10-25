@@ -51,15 +51,26 @@ for ($r = 0; $r -lt $Progonov; $r++) {
   $out = Join-Path $tmp "skill_$s.json"
   $log = Join-Path $tmp "log_$s.txt"
   $env:RUKI_LOG = $log
-  Remove-Item $out, $log -ErrorAction SilentlyContinue
+  Remove-Item $out, $log, (Join-Path $tmp "err_$s.txt") -ErrorAction SilentlyContinue
   $errF = Join-Path $tmp "err_$s.txt"; $soF = Join-Path $tmp "so_$s.txt"
   $zapuskOshibka = $null
   $skSw = [Diagnostics.Stopwatch]::StartNew()
   try {
-    $vyvod = & powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $koren 'skills\zapolnit-formu.ps1') -Plan $planPut -Vyhod $out 2>&1 | Out-String
-    $vyvod | Out-File -FilePath $soF -Encoding utf8
-    $zapuskOshibka = "kod=$LASTEXITCODE ms=$($skSw.ElapsedMilliseconds) est_vyhod=$(Test-Path $out)"
-  } catch { $zapuskOshibka = $_.Exception.Message }
+    # own process with a hard time limit
+    $psi = New-Object Diagnostics.ProcessStartInfo
+    $psi.FileName = 'powershell.exe'
+    $psi.Arguments = '-NoProfile -ExecutionPolicy Bypass -File "{0}" -Plan "{1}" -Vyhod "{2}"' -f (Join-Path $koren 'skills\zapolnit-formu.ps1'), $planPut, $out
+    $psi.UseShellExecute = $false
+    $psi.CreateNoWindow = $true
+    $psi.RedirectStandardError = $true
+    $pr = [Diagnostics.Process]::Start($psi)
+    $errTask = $pr.StandardError.ReadToEndAsync()
+    $vovremya = $pr.WaitForExit(150000)
+    if (-not $vovremya) { Stop-Process -Id $pr.Id -Force -ErrorAction SilentlyContinue }
+    $errTxt = if ($errTask.Wait(3000)) { [string]$errTask.Result } else { '' }
+    if ($errTxt) { [IO.File]::WriteAllText($errF, $errTxt) }
+    $zapuskOshibka = "kod=$(if ($vovremya) { $pr.ExitCode } else { 'timeout' }) ms=$($skSw.ElapsedMilliseconds) est_vyhod=$(Test-Path $out)"
+  } catch { $zapuskOshibka = 'zapusk: ' + $_.Exception.Message }
   $skill = if (Test-Path $out) { Get-Content -Raw -Encoding UTF8 $out | ConvertFrom-Json } else { $null }
 
   # independent check of what the page received
@@ -94,9 +105,10 @@ for ($r = 0; $r -lt $Progonov; $r++) {
   }
   if (-not $damp -and $o -and $r -eq 0) { $damp = (Get-DampDereva $o.Doc 0 8) -join "`n" }
   if ($job) { Stop-Job $job -ErrorAction SilentlyContinue; Remove-Job $job -Force -ErrorAction SilentlyContinue }
-  $logTail = @(); if (Test-Path $log) { $logTail += @(Get-Content $log -Encoding UTF8 | Select-Object -Last 25) }
+  # plain strings only: Get-Content lines carry provider properties that blow up ConvertTo-Json
+  $logTail = @(); if (Test-Path $log) { $logTail += @(Get-Content $log -Encoding UTF8 | Select-Object -Last 25 | ForEach-Object { [string]$_ }) }
   if ($zapuskOshibka) { $logTail += "ZAPUSK: $zapuskOshibka" }
-  foreach ($ff in @($errF, $soF)) { if (Test-Path $ff) { $logTail += @(Get-Content $ff -Encoding UTF8 | Select-Object -Last 15) } }
+  foreach ($ff in @($errF, $soF)) { if (Test-Path $ff) { $logTail += @(Get-Content $ff -Encoding UTF8 | Select-Object -Last 15 | ForEach-Object { [string]$_ }) } }
   $vse += [ordered]@{
     progon = $r; seed = $s; stranica = $imya; okno_pomeha = $oknoPomeha
     skill = $skill; proverka = $prov; log = $logTail
