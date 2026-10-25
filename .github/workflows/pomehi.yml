@@ -30,7 +30,7 @@ jobs:
         shell: powershell
         run: |
           $ErrorActionPreference = 'Continue'
-          & ./ci/progon-pomehi.ps1 -Seed 0 -Progonov 4 -Zhestko -Vyhod "rezultat-dym.json" *>&1 | Tee-Object -FilePath konsol-dym.txt
+          try { & ./ci/progon-pomehi.ps1 -Seed 0 -Progonov 4 -Zhestko -Vyhod "rezultat-dym.json" *>&1 | Tee-Object -FilePath konsol-dym.txt } catch { ($_ | Out-String) | Tee-Object -FilePath konsol-dym.txt -Append }
           if (-not (Test-Path rezultat-dym.json)) { exit 1 }
           exit 0
       - uses: actions/upload-artifact@v4
@@ -76,7 +76,7 @@ jobs:
         shell: powershell
         run: |
           $ErrorActionPreference = 'Continue'
-          & ./ci/progon-pomehi.ps1 -Seed ${{ matrix.seed }} -Progonov 8 -Vyhod "rezultat-${{ matrix.seed }}.json" *>&1 | Tee-Object -FilePath "konsol-${{ matrix.seed }}.txt"
+          try { & ./ci/progon-pomehi.ps1 -Seed ${{ matrix.seed }} -Progonov 8 -Vyhod "rezultat-${{ matrix.seed }}.json" *>&1 | Tee-Object -FilePath "konsol-${{ matrix.seed }}.txt" } catch { ($_ | Out-String) | Tee-Object -FilePath "konsol-${{ matrix.seed }}.txt" -Append }
           exit 0
       - uses: actions/upload-artifact@v4
         if: always()

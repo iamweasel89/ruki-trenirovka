@@ -95,13 +95,13 @@ for ($r = 0; $r -lt $Progonov; $r++) {
   $prov = [ordered]@{ uspeh = $false; prichina = ''; pomehi_stranicy = @(); otpravleno = $false }
   $o = Wait-Stranica $plan.stranica 6000
   if ($imya -eq 'parol') {
-    $k = if ($o) { Find-Element $o.Doc 'kontrol' ([regex]::Unescape('Контроль пароля')) 'tekst' 3000 } else { $null }
+    $k = if ($o) { Find-Element $o.Doc 'kontrol' ([regex]::Unescape('\u041a\u043e\u043d\u0442\u0440\u043e\u043b\u044c\u0020\u043f\u0430\u0440\u043e\u043b\u044f')) 'tekst' 3000 } else { $null }
     $dl = Get-Znachenie $k
     $stopOk = $skill -and $skill.ostanovka -and $skill.ostanovka.prichina -eq $plan.ozhidaetsya_ostanovka
     $prov.uspeh = [bool]($stopOk -and $dl -eq '0')
     $prov.prichina = "ostanovka=$($skill.ostanovka.prichina) dlina_parolya=$dl"
   } else {
-    $it = if ($o) { Find-Element $o.Doc 'itog' ([regex]::Unescape('Итог')) 'tekst' 3000 } else { $null }
+    $it = if ($o) { Find-Element $o.Doc 'itog' ([regex]::Unescape('\u0418\u0442\u043e\u0433')) 'tekst' 3000 } else { $null }
     $txt = Get-Znachenie $it
     if (-not $txt) { $prov.prichina = 'net-itoga' }
     else {
