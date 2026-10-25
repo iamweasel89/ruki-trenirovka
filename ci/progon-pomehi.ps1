@@ -10,7 +10,7 @@ $koren = Split-Path -Parent $PSScriptRoot
 . (Join-Path $koren 'lib\okno.ps1')
 $tmp = if ($env:RUNNER_TEMP) { $env:RUNNER_TEMP } else { [IO.Path]::GetTempPath() }
 $chrome = @("$env:ProgramFiles\Google\Chrome\Application\chrome.exe", "${env:ProgramFiles(x86)}\Google\Chrome\Application\chrome.exe") | Where-Object { Test-Path $_ } | Select-Object -First 1
-$stranicy = @($Stranicy -split ',')
+$spisokStranic = @($Stranicy -split ',')
 $vse = @()
 $damp = $null
 $jobSw = [Diagnostics.Stopwatch]::StartNew()
@@ -49,7 +49,7 @@ public static class PomehaOkno { [DllImport("user32.dll")] public static extern 
 }
 
 for ($r = 0; $r -lt $Progonov; $r++) {
-  $imya = $stranicy[($Seed + $r) % $stranicy.Count]
+  $imya = $spisokStranic[($Seed + $r) % $spisokStranic.Count]
   $s = 50000 + $Seed * 1000 + $r
   $rnd = New-Object Random($s)
   # page disturbances: the usual four always; slow render instead of delay sometimes; reload sometimes

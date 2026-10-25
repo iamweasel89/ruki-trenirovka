@@ -18,7 +18,13 @@ $koren = Split-Path -Parent $PSScriptRoot
 
 $sw = [Diagnostics.Stopwatch]::StartNew()
 Write-RukiLog "start plan=$Plan"
-$pl = Get-Content -Raw -Encoding UTF8 $Plan | ConvertFrom-Json
+$pl = $null
+try { $pl = Get-Content -Raw -Encoding UTF8 -ErrorAction Stop $Plan | ConvertFrom-Json } catch { Write-RukiLog "plan ne prochitan: $($_.Exception.Message)" }
+# an unreadable or empty plan is an honest stop, never an empty success
+if (-not $pl -or -not $pl.stranica -or -not $pl.stranica.url_soderzhit -or @($pl.shagi).Count -eq 0) {
+  ([ordered]@{ plan = $Plan; ok = $false; shagi = @(); ostanovka = [ordered]@{ shag = 0; prichina = 'plan-nekorrekten' }; pomehi = @{}; ms = [int]$sw.ElapsedMilliseconds } | ConvertTo-Json -Depth 4) | Out-File -FilePath $Vyhod -Encoding utf8
+  exit 0
+}
 $rez = [ordered]@{ plan = $pl.imya; ok = $false; shagi = @(); ostanovka = $null; pomehi = @{}; stranica = $null; perezapuskov = 0; ms = 0 }
 
 function Save-Rez {
