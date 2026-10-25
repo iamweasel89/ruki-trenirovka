@@ -44,6 +44,13 @@ function Get-PerednijRoot {
   return [RukiOkno]::GetAncestor($fg, 2)
 }
 
+# is our window in front and not minimised right now (cheap, for a check per character)
+function Test-OknoVperedi([IntPtr]$hwnd) {
+  if ($hwnd -eq [IntPtr]::Zero) { return $true }
+  if ([RukiOkno]::IsIconic($hwnd)) { return $false }
+  return (Get-PerednijRoot) -eq $hwnd
+}
+
 # returns @{ Ok; Bylo } where Bylo says whether something had to be fixed
 function Confirm-OknoVidimo([IntPtr]$hwnd, [int]$popytok = 4) {
   if (-not [RukiOkno]::IsWindow($hwnd)) { return [pscustomobject]@{ Ok = $false; Bylo = 'net-okna' } }

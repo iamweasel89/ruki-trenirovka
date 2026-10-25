@@ -109,7 +109,10 @@ function Find-Element($doc, [string]$id, [string]$metka, [string]$tip, [int]$Tim
   if ($metka) { $kl += New-PropCond $AE::NameProperty $metka }
   $cond = New-AndCond @($ctC, (New-OrCond $kl))
   $sw = [Diagnostics.Stopwatch]::StartNew()
+  $kr = 0
   do {
+    # the document died (page reloaded or window closed): no point waiting
+    if ((++$kr % 6) -eq 0 -and -not (Test-Zhivoj $doc)) { Write-RukiLog "poisk ${id}: dokument mertv"; return $null }
     try {
       $all = $doc.FindAll($TS::Descendants, $cond)
       $best = $null

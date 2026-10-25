@@ -36,14 +36,22 @@ function Send-Klavisha([string]$imya) {
   }
 }
 
-function Send-Tekst([string]$s, [int]$pauza = 12) {
+# types $s; with $hwnd it checks before every character that our window is still in front
+# and stops at once otherwise (never type into a foreign window). returns chars typed.
+function Send-Tekst([string]$s, [int]$pauza = 12, [IntPtr]$hwnd = [IntPtr]::Zero) {
+  $n = 0
   foreach ($ch in $s.ToCharArray()) {
+    if ($hwnd -ne [IntPtr]::Zero -and -not (Test-OknoVperedi $hwnd)) { Write-RukiLog "vvod prervan: okno ne vperedi posle $n"; return $n }
     if ($ch -eq "`n") { Send-Klavisha 'Enter' }
-    elseif ($ch -eq "`r") { continue }
+    elseif ($ch -eq "`r") { }
     else { $null = [RukiKlav]::Simvol($ch) }
+    $n++
     Start-Sleep -Milliseconds $pauza
   }
+  return $n
 }
+
+function Set-MetkaVvoda($ctx) { $ctx.PoslednijVvod = [Environment]::TickCount }
 
 # context: @{ Doc; Okno; Hwnd; Plan; Pomehi = @{}; EstParol = bool }
 function Add-Pomeha($ctx, [string]$k) {
@@ -116,13 +124,15 @@ function Get-ZnachenieUstojchivo($el) {
 function Set-Tekst($ctx, $shag, [int]$kusok = 8) {
   $cel = ([string]$shag.znachenie) -replace "`r`n", "`n"
   for ($pop = 1; $pop -le 6; $pop++) {
-    $el = Find-Element $ctx.Doc $shag.id $shag.metka $shag.tip 6000
+    $el = Find-Element $ctx.Doc $shag.id $shag.metka $shag.tip $ctx.TerpenieMs
     if (-not $el) { return @{ Status = 'stop'; Prichina = 'net-elementa'; Popytki = $pop } }
     if (Test-Parol $el) { return @{ Status = 'stop'; Prichina = 'pole-parolya'; Popytki = $pop } }
     $g = Confirm-Gotovnost $ctx $el
     if ($g -ne 'ok') { continue }
     $tek = Get-ZnachenieUstojchivo $el
     if ($tek -ceq $cel) { return @{ Status = 'ok'; Popytki = $pop } }
+    if (-not (Test-OknoVperedi $ctx.Hwnd)) { continue }
+    Set-MetkaVvoda $ctx
     if ($tek -and $cel.StartsWith([string]$tek)) {
       $ost = $cel.Substring(([string]$tek).Length)
       Send-Klavisha 'CtrlEnd'
@@ -146,7 +156,9 @@ function Set-Tekst($ctx, $shag, [int]$kusok = 8) {
       if (-not $ctx.EstParol -and (Find-Dialog $ctx.Doc)) { $null = Close-Dialog $ctx; $sboj = $true; break }
       $n = [Math]::Min($k, $ost.Length)
       $ch = $ost.Substring(0, $n)
-      Send-Tekst $ch
+      $nn = Send-Tekst $ch 12 $ctx.Hwnd
+      Set-MetkaVvoda $ctx
+      if ($nn -lt $n) { Add-Pomeha $ctx 'vvod-prervan'; $sboj = $true; break }
       $nabrano += $ch; $ost = $ost.Substring($n)
       if ($k -gt 1 -or $ost.Length -eq 0 -or ($nabrano.Length % 8) -eq 0) {
         $v = Wait-Znachenie $el $nabrano 900
@@ -163,7 +175,7 @@ function Set-Tekst($ctx, $shag, [int]$kusok = 8) {
 function Set-Flazhok($ctx, $shag) {
   $cel = [bool]$shag.znachenie
   for ($pop = 1; $pop -le 5; $pop++) {
-    $el = Find-Element $ctx.Doc $shag.id $shag.metka 'flazhok' 6000
+    $el = Find-Element $ctx.Doc $shag.id $shag.metka 'flazhok' $ctx.TerpenieMs
     if (-not $el) { return @{ Status = 'stop'; Prichina = 'net-elementa'; Popytki = $pop } }
     $ok = Confirm-OknoVidimo $ctx.Hwnd
     if ($ok.Bylo) { Add-Pomeha $ctx 'okno' }
@@ -171,6 +183,7 @@ function Set-Flazhok($ctx, $shag) {
     $v = Get-ZnachenieUstojchivo $el
     if ($v -ceq $cel) { return @{ Status = 'ok'; Popytki = $pop } }
     if (-not $el.Current.IsEnabled) { return @{ Status = 'stop'; Prichina = 'flazhok-nedostupen'; Popytki = $pop } }
+    Set-MetkaVvoda $ctx
     try { $el.GetCurrentPattern([System.Windows.Automation.TogglePattern]::Pattern).Toggle() } catch { continue }
     if ((Wait-Znachenie $el $cel 1000) -ceq $cel) { return @{ Status = 'ok'; Popytki = $pop } }
   }

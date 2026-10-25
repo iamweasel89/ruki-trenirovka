@@ -12,7 +12,7 @@
 <script>
 (function () {
   // the form is rendered late, by script, as a settings screen often is
-  var ms = P.est('zaderzhka') ? P.mezhdu(1000, 4000) : 0;
+  var ms = P.zaderzhkaMs(1000, 4000);
   setTimeout(function () {
     var kont = document.getElementById('kont');
     kont.innerHTML =
@@ -37,7 +37,7 @@
       if (e.target.id === 'sohranit' && !e.target.disabled) P.pokazatItog(forma, P.sobrat(forma));
     });
   }, ms);
-  if (ms) P.zhurnal.push('zaderzhka');
+  if (ms) P.zhurnal.push(P.est('medlenno') ? 'medlenno' : 'zaderzhka');
 })();
 </script>
 </body></html>

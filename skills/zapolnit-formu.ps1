@@ -5,7 +5,10 @@
 param(
   [Parameter(Mandatory = $true)][string]$Plan,
   [Parameter(Mandatory = $true)][string]$Vyhod,
-  [int]$TimeoutStranicyMs = 25000
+  [int]$TimeoutStranicyMs = 25000,
+  [int]$TerpenieMs = 20000,
+  [int]$TishinaMs = 1700,
+  [int]$PerezapuskovMaks = 2
 )
 $ErrorActionPreference = 'Continue'
 $koren = Split-Path -Parent $PSScriptRoot
@@ -16,7 +19,7 @@ $koren = Split-Path -Parent $PSScriptRoot
 $sw = [Diagnostics.Stopwatch]::StartNew()
 Write-RukiLog "start plan=$Plan"
 $pl = Get-Content -Raw -Encoding UTF8 $Plan | ConvertFrom-Json
-$rez = [ordered]@{ plan = $pl.imya; ok = $false; shagi = @(); ostanovka = $null; pomehi = @{}; stranica = $null; ms = 0 }
+$rez = [ordered]@{ plan = $pl.imya; ok = $false; shagi = @(); ostanovka = $null; pomehi = @{}; stranica = $null; perezapuskov = 0; ms = 0 }
 
 function Save-Rez {
   $rez.ms = [int]$sw.ElapsedMilliseconds
@@ -30,12 +33,13 @@ function Stop-Skill($n, $shag, [string]$prichina, [string]$podrobno = '') {
   exit 0
 }
 
-$ctx = @{ Doc = $null; Okno = $null; Hwnd = [IntPtr]::Zero; Plan = $pl; Pomehi = @{}; EstParol = $false }
+$ctx = @{ Doc = $null; Okno = $null; Hwnd = [IntPtr]::Zero; Url = $null; Plan = $pl; Pomehi = @{}; EstParol = $false
+          TerpenieMs = $TerpenieMs; PoslednijVvod = [Environment]::TickCount }
 
 # 1. page check
 $o = Wait-Stranica $pl.stranica $TimeoutStranicyMs
 if (-not $o) { $rez.ostanovka = [ordered]@{ shag = 0; prichina = 'net-stranicy' }; Save-Rez; exit 0 }
-$ctx.Doc = $o.Doc; $ctx.Okno = $o.Okno; $ctx.Hwnd = $o.Hwnd
+$ctx.Doc = $o.Doc; $ctx.Okno = $o.Okno; $ctx.Hwnd = $o.Hwnd; $ctx.Url = $o.Url
 $rez.stranica = [ordered]@{ po_url = $o.PoUrl }
 $v = Confirm-OknoVidimo $ctx.Hwnd
 if (-not $v.Ok) { $rez.ostanovka = [ordered]@{ shag = 0; prichina = 'okno-ne-vidno'; podrobno = $v.Bylo }; Save-Rez; exit 0 }
@@ -77,11 +81,25 @@ function Sync-Forma($polya) {
   return @{ Status = 'stop'; Prichina = 'sverka-ne-soshlas' }
 }
 
-function Press-Knopka($n, $shag, $polya) {
-  for ($pop = 1; $pop -le 4; $pop++) {
+# wait for quiet since the last input (a late re-render fires within that time),
+# then reconcile; repeat until a pass finds nothing to fix
+function Sync-Ustojchivo($polya) {
+  for ($k = 1; $k -le 4; $k++) {
+    $proshlo = [Environment]::TickCount - $ctx.PoslednijVvod
+    if ($proshlo -lt $TishinaMs -and $proshlo -ge 0) { Start-Sleep -Milliseconds ($TishinaMs - $proshlo) }
+    $do = [int]$ctx.Pomehi['sverka-ispravila']
     $s = Sync-Forma $polya
     if ($s.Status -ne 'ok') { return $s }
-    $b = Find-Element $ctx.Doc $shag.id $shag.metka 'knopka' 6000
+    if ([int]$ctx.Pomehi['sverka-ispravila'] -eq $do) { return $s }
+  }
+  return @{ Status = 'stop'; Prichina = 'forma-ne-ustoyalas' }
+}
+
+function Press-Knopka($n, $shag, $polya) {
+  for ($pop = 1; $pop -le 4; $pop++) {
+    $s = Sync-Ustojchivo $polya
+    if ($s.Status -ne 'ok') { return $s }
+    $b = Find-Element $ctx.Doc $shag.id $shag.metka 'knopka' $TerpenieMs
     if (-not $b) { return @{ Status = 'stop'; Prichina = 'net-knopki' } }
     $t = [Diagnostics.Stopwatch]::StartNew()
     while (-not $b.Current.IsEnabled -and $t.ElapsedMilliseconds -lt 3000) { Start-Sleep -Milliseconds 150 }
@@ -94,30 +112,66 @@ function Press-Knopka($n, $shag, $polya) {
     if (Find-Dialog $ctx.Doc) { $null = Close-Dialog $ctx; continue }
     $ok = Confirm-OknoVidimo $ctx.Hwnd
     if ($ok.Bylo) { Add-Pomeha $ctx 'okno' }
+    if ($shag.final) { $script:finalNazhata = $true }
     try { $b.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern).Invoke() }
-    catch { try { $b.SetFocus(); Send-Klavisha 'Enter' } catch {} }
+    catch { try { if (Test-OknoVperedi $ctx.Hwnd) { $b.SetFocus(); Send-Klavisha 'Enter' } } catch {} }
     if (-not $shag.posle) { Start-Sleep -Milliseconds 500; return @{ Status = 'ok'; Popytki = $pop } }
-    $p = Find-Element $ctx.Doc $shag.posle.id $shag.posle.metka $shag.posle.tip 6000
+    $p = Find-Element $ctx.Doc $shag.posle.id $shag.posle.metka $shag.posle.tip $TerpenieMs
     if ($p) { return @{ Status = 'ok'; Popytki = $pop } }
     Write-RukiLog "posle nazhatiya $($shag.id) ne poyavilos $($shag.posle.id)"
+    # a final button is never pressed twice: no confirmation means an honest stop
+    if ($shag.final) { return @{ Status = 'stop'; Prichina = 'net-podtverzhdeniya' } }
   }
   return @{ Status = 'stop'; Prichina = 'knopka-ne-srabotala' }
 }
 
-# 2. steps
-$polya = @()
-$n = 0
-foreach ($shag in $pl.shagi) {
-  $n++
-  $t0 = $sw.ElapsedMilliseconds
-  if ($shag.tip -eq 'knopka') { $r = Press-Knopka $n $shag $polya; $polya = @() }
-  else {
-    Update-EstParol
-    $r = Invoke-Shag $shag
-    if ($r.Status -eq 'ok') { $polya += $shag }
-  }
-  $rez.shagi += [ordered]@{ n = $n; tip = $shag.tip; id = $shag.id; status = $r.Status; popytki = $r.Popytki; ms = [int]($sw.ElapsedMilliseconds - $t0) }
-  if ($r.Status -ne 'ok') { Stop-Skill $n $shag $r.Prichina }
+# the page was reloaded or replaced (new document / new URL / new window)?
+# if so, take the new context and say so
+function Update-Kontekst {
+  $o = Wait-Stranica $pl.stranica 8000
+  if (-not $o) { return 'net-stranicy' }
+  $novyj = (-not (Test-Zhivoj $ctx.Doc)) -or (-not (Test-TotZhe $o.Doc $ctx.Doc)) -or ($o.Hwnd -ne $ctx.Hwnd) -or ($o.Url -and $ctx.Url -and $o.Url -ne $ctx.Url)
+  if (-not $novyj) { return 'prezhnij' }
+  Write-RukiLog "stranica obnovilas: url=$($o.Url -ne $ctx.Url) hwnd=$($o.Hwnd -ne $ctx.Hwnd)"
+  $ctx.Doc = $o.Doc; $ctx.Okno = $o.Okno; $ctx.Hwnd = $o.Hwnd; $ctx.Url = $o.Url
+  $ctx.EstParol = $false
+  Update-EstParol
+  return 'novyj'
 }
+$vosstanovimye = @('net-elementa', 'ne-sovpalo-posle-popytok', 'flazhok-ne-ustanovlen', 'net-knopki', 'knopka-ne-srabotala', 'sverka-ne-soshlas', 'forma-ne-ustoyalas')
+
+# 2. steps; after a page reload the plan is replayed from the start (values are idempotent),
+# but never after the final button was pressed
+$script:finalNazhata = $false
+$perezapusk = 0
+do {
+  $snova = $false
+  $polya = @()
+  $n = 0
+  foreach ($shag in $pl.shagi) {
+    $n++
+    $t0 = $sw.ElapsedMilliseconds
+    if ($shag.tip -eq 'knopka') { $r = Press-Knopka $n $shag $polya; $polya = @() }
+    else {
+      Update-EstParol
+      $r = Invoke-Shag $shag
+      if ($r.Status -eq 'ok') { $polya += $shag }
+    }
+    $rez.shagi += [ordered]@{ n = $n; tip = $shag.tip; id = $shag.id; status = $r.Status; popytki = $r.Popytki; ms = [int]($sw.ElapsedMilliseconds - $t0); krug = $perezapusk }
+    if ($r.Status -eq 'ok') { continue }
+    $podr = ''
+    if ($r.Prichina -in $vosstanovimye -and -not $script:finalNazhata) {
+      $k = Update-Kontekst
+      if ($k -eq 'novyj' -and $perezapusk -lt $PerezapuskovMaks) {
+        $perezapusk++; $rez.perezapuskov = $perezapusk
+        Add-Pomeha $ctx 'perezagruzka'
+        Write-RukiLog "perezapusk plana $perezapusk posle shaga $n ($($r.Prichina))"
+        $snova = $true; break
+      }
+      $podr = "kontekst=$k"
+    }
+    Stop-Skill $n $shag $r.Prichina $podr
+  }
+} while ($snova)
 $rez.ok = $true
 Save-Rez
