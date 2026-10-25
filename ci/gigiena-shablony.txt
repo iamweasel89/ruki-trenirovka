@@ -1,0 +1,12 @@
+# one .NET/PCRE-compatible regex per line, case-insensitive; this file is excluded from the scan
+ts\.net
+\\Users\\
+@gmail
+\b(?:25[0-5]|2[0-4][0-9]|1?[0-9]?[0-9])(?:\.(?:25[0-5]|2[0-4][0-9]|1?[0-9]?[0-9])){3}\b
+-----BEGIN [A-Z ]*PRIVATE KEY-----
+-----BEGIN OPENSSH PRIVATE KEY-----
+\bghp_[A-Za-z0-9]{30,}
+\bgithub_pat_[A-Za-z0-9_]{20,}
+\bsk-ant-[A-Za-z0-9_-]{10,}
+\bAKIA[0-9A-Z]{16}\b
+\bxox[abpr]-[A-Za-z0-9-]{10,}

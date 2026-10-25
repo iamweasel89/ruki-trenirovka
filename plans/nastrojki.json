@@ -1,0 +1,12 @@
+{
+  "imya": "nastrojki",
+  "stranica": { "url_soderzhit": "/polygon/nastrojki.html", "zagolovok_soderzhit": "Полигон — Настройки" },
+  "shagi": [
+    { "tip": "tekst", "id": "profil", "metka": "Имя профиля", "znachenie": "Рабочий профиль Б-2" },
+    { "tip": "chislo", "id": "shrift", "metka": "Размер шрифта", "znachenie": "18" },
+    { "tip": "tekst", "id": "podpis", "metka": "Подпись к письмам", "znachenie": "С уважением,\nотдел испытаний" },
+    { "tip": "flazhok", "id": "temnaya", "metka": "Тёмная тема", "znachenie": true },
+    { "tip": "flazhok", "id": "uvedomleniya", "metka": "Уведомления", "znachenie": false },
+    { "tip": "knopka", "id": "sohranit", "metka": "Сохранить", "final": true, "posle": { "tip": "tekst", "id": "itog", "metka": "Итог" } }
+  ]
+}

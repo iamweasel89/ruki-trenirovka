@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><title>Полигон — Настройки</title>
+<link rel="stylesheet" href="stil.css"></head>
+<body>
+<header><b>Полигон</b><input id="poisk" type="text" aria-label="Поиск по сайту" placeholder="Поиск"></header>
+<main>
+<h1>Настройки</h1>
+<p class="zagruzka" id="zagruzka">Загружаем настройки…</p>
+<div id="kont"></div>
+</main>
+<script src="pomehi.js"></script>
+<script>
+(function () {
+  // the form is rendered late, by script, as a settings screen often is
+  var ms = P.est('zaderzhka') ? P.mezhdu(1000, 4000) : 0;
+  setTimeout(function () {
+    var kont = document.getElementById('kont');
+    kont.innerHTML =
+      '<form id="forma" onsubmit="return false">' +
+      '<label>Имя профиля <input id="profil" type="text" aria-label="Имя профиля"></label>' +
+      '<label>Размер шрифта <input id="shrift" type="number" min="8" max="40" aria-label="Размер шрифта"></label>' +
+      '<label>Подпись к письмам <textarea id="podpis" aria-label="Подпись к письмам"></textarea></label>' +
+      '<label><input type="checkbox" id="temnaya" aria-label="Тёмная тема"> Тёмная тема</label>' +
+      '<label><input type="checkbox" id="uvedomleniya" aria-label="Уведомления" checked> Уведомления</label>' +
+      '<button type="button" id="sohranit" disabled>Сохранить</button></form>';
+    document.getElementById('zagruzka').hidden = true;
+    var forma = document.getElementById('forma');
+    var izmeneno = false;
+    function obnovit() {
+      var p = document.getElementById('profil');
+      document.getElementById('sohranit').disabled = !(izmeneno && p && p.value.trim() !== '');
+    }
+    forma.addEventListener('input', function () { izmeneno = true; obnovit(); });
+    forma.addEventListener('change', function () { izmeneno = true; obnovit(); });
+    document.addEventListener('pererisovka', obnovit);
+    forma.addEventListener('click', function (e) {
+      if (e.target.id === 'sohranit' && !e.target.disabled) P.pokazatItog(forma, P.sobrat(forma));
+    });
+  }, ms);
+  if (ms) P.zhurnal.push('zaderzhka');
+})();
+</script>
+</body></html>

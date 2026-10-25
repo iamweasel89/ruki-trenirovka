@@ -1,0 +1,13 @@
+body { font-family: Segoe UI, Arial, sans-serif; margin: 0; background: #f4f4f0; color: #222; }
+header { background: #2d4a3e; color: #fff; padding: 8px 16px; display: flex; gap: 16px; align-items: center; }
+header input { padding: 4px 8px; }
+main { max-width: 720px; margin: 16px auto; padding: 0 16px; }
+label { display: block; margin: 10px 0 4px; }
+input[type=text], input[type=number], input[type=password], textarea { width: 100%; padding: 6px; font-size: 15px; box-sizing: border-box; }
+textarea { min-height: 90px; }
+.flazhki label { display: inline-block; margin-right: 14px; }
+button { margin-top: 14px; padding: 8px 18px; font-size: 15px; }
+button:disabled { opacity: .5; }
+.modal-fon { position: fixed; inset: 0; background: rgba(0,0,0,.45); display: flex; align-items: center; justify-content: center; }
+.modal { background: #fff; padding: 20px 28px; border-radius: 6px; }
+.zagruzka { color: #777; }

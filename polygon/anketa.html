@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><title>Полигон — Анкета</title>
+<link rel="stylesheet" href="stil.css"></head>
+<body>
+<header><b>Полигон</b><input id="poisk" type="text" aria-label="Поиск по сайту" placeholder="Поиск"></header>
+<main>
+<h1>Анкета</h1>
+<p class="zagruzka" id="zagruzka">Загрузка…</p>
+<form id="forma" hidden onsubmit="return false">
+  <section id="shag1" data-shag="1">
+    <h2>Шаг 1 из 3</h2>
+    <label>Имя <input id="imya" type="text" aria-label="Имя"></label>
+    <label>Фамилия <input id="familiya" type="text" aria-label="Фамилия"></label>
+    <label>Город <input id="gorod" type="text" aria-label="Город"></label>
+    <button type="button" id="dalee1" disabled>Далее</button>
+  </section>
+  <section id="shag2" data-shag="2" hidden>
+    <h2>Шаг 2 из 3</h2>
+    <label>О себе <textarea id="o_sebe" aria-label="О себе"></textarea></label>
+    <label>Возраст <input id="vozrast" type="number" min="1" max="120" aria-label="Возраст"></label>
+    <p>Интересы (не больше двух):</p>
+    <div class="flazhki" id="interesy">
+      <label><input type="checkbox" id="int_muzyka" aria-label="Музыка"> Музыка</label>
+      <label><input type="checkbox" id="int_sport" aria-label="Спорт"> Спорт</label>
+      <label><input type="checkbox" id="int_knigi" aria-label="Книги"> Книги</label>
+      <label><input type="checkbox" id="int_kino" aria-label="Кино"> Кино</label>
+      <label><input type="checkbox" id="int_sad" aria-label="Сад"> Сад</label>
+      <label><input type="checkbox" id="int_shahmaty" aria-label="Шахматы"> Шахматы</label>
+    </div>
+    <button type="button" id="dalee2" disabled>Далее</button>
+  </section>
+  <section id="shag3" data-shag="3" hidden>
+    <h2>Шаг 3 из 3</h2>
+    <label>Комментарий <input id="kommentarij" type="text" aria-label="Комментарий"></label>
+    <label><input type="checkbox" id="soglasie" aria-label="Согласен с условиями"> Согласен с условиями</label>
+    <button type="button" id="otpravit" disabled>Отправить</button>
+  </section>
+</form>
+</main>
+<script src="pomehi.js"></script>
+<script>
+(function () {
+  var forma = document.getElementById('forma');
+  var tronuto = {};
+  function $(id) { return document.getElementById(id); }
+  function zapolneno(id) { var e = $(id); return e && e.value.trim() !== '' && tronuto[id]; }
+  function otmecheno() { return Array.prototype.filter.call(document.querySelectorAll('#interesy input'), function (x) { return x.checked; }); }
+  function obnovit() {
+    $('dalee1').disabled = !(zapolneno('imya') && zapolneno('familiya') && zapolneno('gorod'));
+    var v = parseInt(($('vozrast') || {}).value, 10);
+    var otm = otmecheno();
+    $('dalee2').disabled = !(zapolneno('o_sebe') && tronuto.vozrast && v >= 1 && v <= 120 && otm.length >= 1);
+    document.querySelectorAll('#interesy input').forEach(function (x) { x.disabled = !x.checked && otm.length >= 2; });
+    $('otpravit').disabled = !(zapolneno('kommentarij') && $('soglasie') && $('soglasie').checked);
+  }
+  document.addEventListener('input', function (e) { if (e.target.id) tronuto[e.target.id] = true; obnovit(); });
+  document.addEventListener('change', function (e) { if (e.target.id) tronuto[e.target.id] = true; obnovit(); });
+  document.addEventListener('pererisovka', obnovit);
+  function perehod(iz, v) {
+    $(iz).hidden = true;
+    P.pokazatPozzhe($(v), 200, 1500);
+  }
+  forma.addEventListener('click', function (e) {
+    var id = e.target.id;
+    if (e.target.disabled) return;
+    if (id === 'dalee1') perehod('shag1', 'shag2');
+    if (id === 'dalee2') perehod('shag2', 'shag3');
+    if (id === 'otpravit') P.pokazatItog(forma, P.sobrat(forma));
+  });
+  P.pokazatPozzhe(forma, 300, 2500, function () { $('zagruzka').hidden = true; });
+})();
+</script>
+</body></html>

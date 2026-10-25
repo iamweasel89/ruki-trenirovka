@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><title>Полигон — Заметки</title>
+<link rel="stylesheet" href="stil.css"></head>
+<body>
+<header><b>Полигон</b><input id="poisk" type="text" aria-label="Поиск по сайту" placeholder="Поиск"></header>
+<main>
+<h1>Редактор заметок</h1>
+<form id="forma" hidden onsubmit="return false">
+  <label>Заголовок <input id="zagolovok" type="text" aria-label="Заголовок"></label>
+  <label>Текст заметки <textarea id="tekst" rows="14" aria-label="Текст заметки"></textarea></label>
+  <button type="button" id="sohranit" disabled>Сохранить заметку</button>
+</form>
+</main>
+<script src="pomehi.js"></script>
+<script>
+(function () {
+  var forma = document.getElementById('forma');
+  function obnovit() {
+    var z = document.getElementById('zagolovok'), t = document.getElementById('tekst');
+    document.getElementById('sohranit').disabled = !(z.value.trim() && t.value.length >= 20);
+  }
+  forma.addEventListener('input', obnovit);
+  document.addEventListener('pererisovka', obnovit);
+  forma.addEventListener('click', function (e) {
+    if (e.target.id === 'sohranit' && !e.target.disabled) P.pokazatItog(forma, P.sobrat(forma));
+  });
+  P.pokazatPozzhe(forma, 200, 1800);
+})();
+</script>
+</body></html>

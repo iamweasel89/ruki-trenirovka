@@ -1,0 +1,10 @@
+{
+  "imya": "parol",
+  "ozhidaetsya_ostanovka": "pole-parolya",
+  "stranica": { "url_soderzhit": "/polygon/parol.html", "zagolovok_soderzhit": "Полигон — Вход" },
+  "shagi": [
+    { "tip": "tekst", "id": "login", "metka": "Логин", "znachenie": "ispytatel_s_dlinnym_loginom_01" },
+    { "tip": "tekst", "id": "parol", "metka": "Пароль", "znachenie": "ne-dolzhno-byt-vvedeno" },
+    { "tip": "knopka", "id": "vojti", "metka": "Войти", "final": true }
+  ]
+}

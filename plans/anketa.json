@@ -1,0 +1,18 @@
+{
+  "imya": "anketa",
+  "stranica": { "url_soderzhit": "/polygon/anketa.html", "zagolovok_soderzhit": "Полигон — Анкета" },
+  "shagi": [
+    { "tip": "tekst", "id": "imya", "metka": "Имя", "znachenie": "Ярослава" },
+    { "tip": "tekst", "id": "familiya", "metka": "Фамилия", "znachenie": "Ковальчук-Брайт" },
+    { "tip": "tekst", "id": "gorod", "metka": "Город", "znachenie": "Нижний Новгород" },
+    { "tip": "knopka", "id": "dalee1", "metka": "Далее", "posle": { "tip": "tekst", "id": "o_sebe", "metka": "О себе" } },
+    { "tip": "tekst", "id": "o_sebe", "metka": "О себе", "znachenie": "Люблю длинные прогулки, чай с чабрецом и задачи «со звёздочкой».\nВторая строка: цифры 0123456789, знаки ?!;:%." },
+    { "tip": "chislo", "id": "vozrast", "metka": "Возраст", "znachenie": "37" },
+    { "tip": "flazhok", "id": "int_knigi", "metka": "Книги", "znachenie": true },
+    { "tip": "flazhok", "id": "int_shahmaty", "metka": "Шахматы", "znachenie": true },
+    { "tip": "knopka", "id": "dalee2", "metka": "Далее", "posle": { "tip": "tekst", "id": "kommentarij", "metka": "Комментарий" } },
+    { "tip": "tekst", "id": "kommentarij", "metka": "Комментарий", "znachenie": "Всё верно, спасибо (тест №7)" },
+    { "tip": "flazhok", "id": "soglasie", "metka": "Согласен с условиями", "znachenie": true },
+    { "tip": "knopka", "id": "otpravit", "metka": "Отправить", "final": true, "posle": { "tip": "tekst", "id": "itog", "metka": "Итог" } }
+  ]
+}
