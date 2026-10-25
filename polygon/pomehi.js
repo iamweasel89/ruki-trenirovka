@@ -3,6 +3,8 @@
 // modal       - a modal dialog pops up while typing and traps focus
 // fokus       - focus is moved away to another field while typing
 // pererisovka - a field is re-rendered (replaced by an empty node) after input
+// obnovlenie  - the page reloads itself once mid-run (all state lost)   [off by default]
+// medlenno    - slow render: delays several times longer                [off by default]
 (function () {
   var q = new URLSearchParams(location.search);
   var seed = parseInt(q.get('seed') || '1', 10) >>> 0 || 1;
@@ -21,11 +23,18 @@
     zhurnal: [], vyklyucheno: false, kudaFokus: null
   };
   function zapis(k) { P.zhurnal.push(k); }
+  if (q.get('obn')) zapis('obnovlenie');
+  // delay in ms for a delayed render, honouring zaderzhka / medlenno
+  P.zaderzhkaMs = function (a, b) {
+    if (P.est('medlenno')) return mezhdu(a * 3 + 1500, b * 3 + 1500);
+    return P.est('zaderzhka') ? mezhdu(a, b) : 0;
+  };
 
   // thresholds on the count of input events
   var modalNa = [mezhdu(3, 20), mezhdu(25, 60)];
   var fokusNa = [mezhdu(4, 25), mezhdu(30, 70)];
   var pererisNa = [mezhdu(6, 30), mezhdu(35, 80)];
+  var obnNa = mezhdu(5, 70);
   var n = 0;
 
   document.addEventListener('input', function (e) {
@@ -36,6 +45,12 @@
     if (P.est('pererisovka') && pererisNa.indexOf(n) >= 0) {
       var t = e.target;
       setTimeout(function () { pererisovat(t); }, mezhdu(150, 1400));
+    }
+    if (P.est('obnovlenie') && !q.get('obn') && n === obnNa) {
+      setTimeout(function () {
+        if (P.vyklyucheno) return;
+        location.replace(location.href.replace(/#.*$/, '') + '&obn=1');
+      }, mezhdu(50, 600));
     }
   }, true);
 
@@ -92,8 +107,8 @@
 
   // delayed reveal of an element
   P.pokazatPozzhe = function (el, a, b, gotovo) {
-    var ms = P.est('zaderzhka') ? mezhdu(a, b) : 0;
-    if (ms) zapis('zaderzhka');
+    var ms = P.zaderzhkaMs(a, b);
+    if (ms) zapis(P.est('medlenno') ? 'medlenno' : 'zaderzhka');
     setTimeout(function () { el.hidden = false; if (gotovo) gotovo(); }, ms);
   };
 

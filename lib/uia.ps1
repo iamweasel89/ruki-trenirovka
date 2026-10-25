@@ -109,7 +109,10 @@ function Find-Element($doc, [string]$id, [string]$metka, [string]$tip, [int]$Tim
   if ($metka) { $kl += New-PropCond $AE::NameProperty $metka }
   $cond = New-AndCond @($ctC, (New-OrCond $kl))
   $sw = [Diagnostics.Stopwatch]::StartNew()
+  $kr = 0
   do {
+    # the document died (page reloaded or window closed): no point waiting
+    if ((++$kr % 6) -eq 0 -and -not (Test-Zhivoj $doc)) { Write-RukiLog "poisk ${id}: dokument mertv"; return $null }
     try {
       $all = $doc.FindAll($TS::Descendants, $cond)
       $best = $null
@@ -123,6 +126,11 @@ function Find-Element($doc, [string]$id, [string]$metka, [string]$tip, [int]$Tim
     Start-Sleep -Milliseconds 150
   } while ($sw.ElapsedMilliseconds -lt $TimeoutMs)
   return $null
+}
+
+# is there a password field anywhere in the document right now
+function Test-EstParolVDoc($doc) {
+  try { return [bool]$doc.FindFirst($TS::Descendants, (New-PropCond $AE::IsPasswordProperty $true)) } catch { return $false }
 }
 
 function Test-Parol($el) {
