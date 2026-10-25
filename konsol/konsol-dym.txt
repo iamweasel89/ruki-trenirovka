@@ -1,0 +1,10 @@
+fajly: foto.png=1592, skan.png=2528, vlozh1.png=329, vlozh2.png=434, zametka.txt=33, снимок 2.png=1167
+[1/6] fajl-foto seed=70000 uspeh=True skill_ok=True lozh=False ok | ost= | zaderzhka,dialog-pozzhe | 
+[2/6] fajl-vlozheniya seed=70001 uspeh=True skill_ok=True lozh=False ok | ost= | medlenno,dialog-pozzhe | svorachivanie
+[3/6] fajl-zamena seed=70002 uspeh=True skill_ok=True lozh=False ok | ost= | zaderzhka,gluhaya | 
+[4/6] fajl-otmena seed=70003 uspeh=True skill_ok=True lozh=False ok | ost= | medlenno,dialog-pozzhe,gluhaya,obrabotka 
+| svorachivanie
+[5/6] fajl-net seed=70004 uspeh=True skill_ok=False lozh=False ok | ost=net-fajla | zaderzhka,dialog-pozzhe,obrabotka 
+| 
+[6/6] fajl-otkaz seed=70005 uspeh=True skill_ok=False lozh=False ok | ost=stranica-otklonila | medlenno,gluhaya | 
+perekrytie

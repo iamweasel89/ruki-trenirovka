@@ -1,0 +1,132 @@
+{
+ "run": "40208451110",
+ "sha": "77200af2b318ef888d3d9b54aa9698472e0ed3dc",
+ "progonov": 42,
+ "uspeshno": 42,
+ "dolya_uspeha_proc": 100.0,
+ "progonov_s_pomehami": 42,
+ "vosstanovleno": 42,
+ "dolya_vosstanovlenij_proc": 100.0,
+ "chestno": 42,
+ "dolya_chestnosti_proc": 100.0,
+ "lozhnyh_uspehov": 0,
+ "dialogov_ostavleno": 0,
+ "utechek_v_chuzhoe_okno": 0,
+ "po_pomehe": {
+  "_skill_zametil": {
+   "progonov": 42,
+   "vosstanovleno": 42
+  },
+  "dialog-pozzhe": {
+   "progonov": 17,
+   "vosstanovleno": 17
+  },
+  "gluhaya": {
+   "progonov": 16,
+   "vosstanovleno": 16
+  },
+  "medlenno": {
+   "progonov": 9,
+   "vosstanovleno": 9
+  },
+  "obrabotka": {
+   "progonov": 8,
+   "vosstanovleno": 8
+  },
+  "perekrytie": {
+   "progonov": 21,
+   "vosstanovleno": 21
+  },
+  "svorachivanie": {
+   "progonov": 20,
+   "vosstanovleno": 20
+  },
+  "zaderzhka": {
+   "progonov": 33,
+   "vosstanovleno": 33
+  }
+ },
+ "po_stranicam": {
+  "fajl-vlozheniya": {
+   "progonov": 6,
+   "uspeh": 6
+  },
+  "fajl-zamena": {
+   "progonov": 7,
+   "uspeh": 7
+  },
+  "fajl-otmena": {
+   "progonov": 8,
+   "uspeh": 8
+  },
+  "fajl-net": {
+   "progonov": 8,
+   "uspeh": 8
+  },
+  "fajl-otkaz": {
+   "progonov": 7,
+   "uspeh": 7
+  },
+  "fajl-foto": {
+   "progonov": 6,
+   "uspeh": 6
+  }
+ },
+ "prichiny_neudach": {},
+ "pomehi_stranicy": {
+  "zaderzhka": 33,
+  "obrabotka": 8,
+  "gluhaya": 16,
+  "dialog-pozzhe": 17,
+  "medlenno": 9
+ },
+ "pomehi_zamecheny_skillom": {
+  "put-klaviatura": 15,
+  "put-kombo": 18,
+  "fokus": 40,
+  "okno": 15,
+  "obrezka": 20,
+  "put-kavychki": 6,
+  "dialog-ne-otkrylsya": 16,
+  "klik-fokus": 4
+ },
+ "okna": {
+  "svorachivanie": 20,
+  "perekrytie": 21
+ },
+ "minut_runnera": 9.9,
+ "po_rabotam": [
+  {
+   "seed": 1,
+   "progonov": 9,
+   "uspeh": 9,
+   "sekund": 126
+  },
+  {
+   "seed": 2,
+   "progonov": 9,
+   "uspeh": 9,
+   "sekund": 100
+  },
+  {
+   "seed": 3,
+   "progonov": 9,
+   "uspeh": 9,
+   "sekund": 96
+  },
+  {
+   "seed": 4,
+   "progonov": 9,
+   "uspeh": 9,
+   "sekund": 100
+  },
+  {
+   "seed": 0,
+   "progonov": 6,
+   "uspeh": 6,
+   "sekund": 85
+  }
+ ],
+ "neudachi": [],
+ "damp_dereva": null
+}

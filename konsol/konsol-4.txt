@@ -1,0 +1,15 @@
+fajly: foto.png=1592, skan.png=2528, vlozh1.png=329, vlozh2.png=434, zametka.txt=33, снимок 2.png=1167
+[1/9] fajl-net seed=74000 uspeh=True skill_ok=False lozh=False ok | ost=net-fajla | medlenno,obrabotka | 
+[2/9] fajl-otkaz seed=74001 uspeh=True skill_ok=False lozh=False ok | ost=stranica-otklonila | zaderzhka,dialog-pozzhe 
+| svorachivanie
+[3/9] fajl-foto seed=74002 uspeh=True skill_ok=True lozh=False ok | ost= | medlenno,dialog-pozzhe,gluhaya | 
+[4/9] fajl-vlozheniya seed=74003 uspeh=True skill_ok=True lozh=False ok | ost= | zaderzhka | svorachivanie
+[5/9] fajl-zamena seed=74004 uspeh=True skill_ok=True lozh=False ok | ost= | zaderzhka,obrabotka | 
+perekrytie,svorachivanie
+[6/9] fajl-otmena seed=74005 uspeh=True skill_ok=True lozh=False ok | ost= | zaderzhka,dialog-pozzhe,gluhaya,obrabotka 
+| perekrytie
+[7/9] fajl-net seed=74006 uspeh=True skill_ok=False lozh=False ok | ost=net-fajla | zaderzhka,gluhaya | 
+perekrytie,svorachivanie
+[8/9] fajl-otkaz seed=74007 uspeh=True skill_ok=False lozh=False ok | ost=stranica-otklonila | zaderzhka | perekrytie
+[9/9] fajl-foto seed=74008 uspeh=True skill_ok=True lozh=False ok | ost= | zaderzhka,dialog-pozzhe,gluhaya,obrabotka | 
+svorachivanie,perekrytie
