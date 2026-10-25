@@ -1,0 +1,212 @@
+{
+ "etap": "matrica",
+ "run": "40205658905",
+ "sha": "a2d1b1d34fc2db211fbf2252754ad2ee266699dc",
+ "progonov": 64,
+ "uspeshno": 64,
+ "dolya_uspeha_proc": 100.0,
+ "shagov_ok": 352,
+ "max_seriya_shagov": 44,
+ "srednyaya_max_seriya": 44.0,
+ "po_stranicam": {
+  "nastrojki": {
+   "progonov": 16,
+   "uspeh": 16
+  },
+  "zametka": {
+   "progonov": 16,
+   "uspeh": 16
+  },
+  "parol": {
+   "progonov": 16,
+   "uspeh": 16
+  },
+  "anketa": {
+   "progonov": 16,
+   "uspeh": 16
+  }
+ },
+ "prichiny_neudach": {},
+ "pomehi_vstrecheno": {
+  "sverka-ispravila": 45,
+  "dialog": 117,
+  "okno": 9,
+  "klik-fokus": 12,
+  "fokus": 442,
+  "okno-zapusk": 23,
+  "fokus-v-parol": 3,
+  "otkat-v-parole": 3,
+  "vvod-ne-doshel": 6
+ },
+ "minut_runnera_matrica": 22.6,
+ "po_rabotam": [
+  {
+   "seed": 1,
+   "progonov": 8,
+   "uspeh": 8,
+   "max_seriya_shagov": 44,
+   "sekund": 143,
+   "oshibka": ""
+  },
+  {
+   "seed": 2,
+   "progonov": 8,
+   "uspeh": 8,
+   "max_seriya_shagov": 44,
+   "sekund": 159,
+   "oshibka": ""
+  },
+  {
+   "seed": 3,
+   "progonov": 8,
+   "uspeh": 8,
+   "max_seriya_shagov": 44,
+   "sekund": 139,
+   "oshibka": ""
+  },
+  {
+   "seed": 4,
+   "progonov": 8,
+   "uspeh": 8,
+   "max_seriya_shagov": 44,
+   "sekund": 124,
+   "oshibka": ""
+  },
+  {
+   "seed": 5,
+   "progonov": 8,
+   "uspeh": 8,
+   "max_seriya_shagov": 44,
+   "sekund": 137,
+   "oshibka": ""
+  },
+  {
+   "seed": 6,
+   "progonov": 8,
+   "uspeh": 8,
+   "max_seriya_shagov": 44,
+   "sekund": 133,
+   "oshibka": ""
+  },
+  {
+   "seed": 7,
+   "progonov": 8,
+   "uspeh": 8,
+   "max_seriya_shagov": 44,
+   "sekund": 136,
+   "oshibka": ""
+  },
+  {
+   "seed": 8,
+   "progonov": 8,
+   "uspeh": 8,
+   "max_seriya_shagov": 44,
+   "sekund": 143,
+   "oshibka": ""
+  }
+ ],
+ "neudachi": [],
+ "primer_progona": {
+  "progon": 0,
+  "seed": 1000,
+  "stranica": "nastrojki",
+  "okno_pomeha": true,
+  "skill": {
+   "plan": "nastrojki",
+   "ok": true,
+   "shagi": [
+    {
+     "n": 1,
+     "tip": "tekst",
+     "id": "profil",
+     "status": "ok",
+     "popytki": 1,
+     "ms": 1012,
+     "krug": 0
+    },
+    {
+     "n": 2,
+     "tip": "chislo",
+     "id": "shrift",
+     "status": "ok",
+     "popytki": 1,
+     "ms": 879,
+     "krug": 0
+    },
+    {
+     "n": 3,
+     "tip": "tekst",
+     "id": "podpis",
+     "status": "ok",
+     "popytki": 2,
+     "ms": 1241,
+     "krug": 0
+    },
+    {
+     "n": 4,
+     "tip": "flazhok",
+     "id": "temnaya",
+     "status": "ok",
+     "popytki": 1,
+     "ms": 197,
+     "krug": 0
+    },
+    {
+     "n": 5,
+     "tip": "flazhok",
+     "id": "uvedomleniya",
+     "status": "ok",
+     "popytki": 1,
+     "ms": 207,
+     "krug": 0
+    },
+    {
+     "n": 6,
+     "tip": "knopka",
+     "id": "sohranit",
+     "status": "ok",
+     "popytki": 1,
+     "ms": 7982,
+     "krug": 0
+    }
+   ],
+   "ostanovka": null,
+   "pomehi": {
+    "sverka-ispravila": 1,
+    "dialog": 2,
+    "okno": 1,
+    "klik-fokus": 1,
+    "fokus": 12
+   },
+   "stranica": {
+    "po_url": true,
+    "final_metod": "url"
+   },
+   "perezapuskov": 0,
+   "ms": 12608
+  },
+  "proverka": {
+   "uspeh": true,
+   "prichina": "ok",
+   "pomehi_stranicy": [
+    "zaderzhka",
+    "fokus",
+    "modal",
+    "pererisovka",
+    "modal",
+    "pererisovka",
+    "fokus"
+   ]
+  },
+  "log": [
+   "15:12:25.986 start plan=D:\\a\\ruki-trenirovka\\ruki-trenirovka\\plans\\nastrojki.json",
+   "15:12:28.429 dialog: Подсказка",
+   "15:12:29.188 okno: ne-vperedi, vozvrashchayu",
+   "15:12:32.342 sverka: profil razoshlos",
+   "15:12:33.751 sverka kuska: zhdali 16, vidim 9",
+   "15:12:33.800 dialog: Подсказка",
+   "ZAPUSK: kod=0 ms=15568 est_vyhod=True"
+  ]
+ },
+ "damp_dereva": "ControlType.Document|Полигон — отправлено|id=RootWebArea|lct=document|pw=False\n  ControlType.Group||id=|lct=header|pw=False\n    ControlType.Text|Полигон|id=|lct=text|pw=False\n    ControlType.Edit|Поиск по сайту|id=poisk|lct=edit|pw=False\n  ControlType.Group||id=|lct=main|pw=False\n    ControlType.Text|Настройки|id=|lct=heading|pw=False\n    ControlType.Text|Отправлено|id=|lct=heading|pw=False\n    ControlType.Edit|Итог|id=itog|lct=edit|pw=False"
+}
