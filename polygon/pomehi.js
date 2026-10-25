@@ -97,7 +97,8 @@
     if (el.type === 'password' || el.id === 'poisk') return;
     zapis('pererisovka');
     var nov = el.cloneNode(false);
-    if (el.type === 'checkbox') { nov.checked = false; nov.removeAttribute('checked'); }
+    // a re-rendered checkbox or radio loses its selection but keeps its value (as a real re-render would)
+    if (el.type === 'checkbox' || el.type === 'radio') { nov.checked = false; nov.removeAttribute('checked'); }
     else { nov.value = ''; nov.removeAttribute('value'); }
     var bylFokus = document.activeElement === el;
     el.replaceWith(nov);

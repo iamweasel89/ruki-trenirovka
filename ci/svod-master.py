@@ -30,7 +30,7 @@ prichiny = collections.Counter()
 pomehi = collections.Counter()
 po_planam = collections.defaultdict(lambda: [0, 0])
 serii, po_rabotam, neudachi = [], [], []
-ispravlenij = vozvratov = stranic_ok = 0
+ispravlenij = vozvratov = stranic_ok = audit_ispr = audit_polej = 0
 for rb in raboty:
     seriya = best = u = 0
     for pr in spisok(rb.get('progony')):
@@ -50,6 +50,8 @@ for rb in raboty:
         if pr.get('okno_pomeha'): pomehi['okno-zapusk'] += 1
         ispravlenij += len(spisok(sk.get('ispravleniya')))
         vozvratov += int(sk.get('vozvratov') or 0)
+        pp = sk.get('proverka_polej') or {}
+        audit_ispr += int(pp.get('ispravleno') or 0); audit_polej += int(pp.get('polej') or 0)
         for sh in spisok(sk.get('shagi')):
             if sh.get('status') == 'ok':
                 stranic_ok += 1; seriya += 1; best = max(best, seriya)
@@ -83,7 +85,7 @@ itog = {
     'tochnost_itoga_srednyaya': round(sum(tochn) / len(tochn), 3) if tochn else None, 'izmereno_tochnost': len(tochn),
     'stranic_projdeno': stranic_ok, 'max_seriya_stranic': max(serii or [0]),
     'srednyaya_max_seriya': round(sum(serii) / len(serii), 1) if serii else 0,
-    'ispravlenij_po_soobshcheniyam': ispravlenij, 'vozvratov_nazad': vozvratov,
+    'ispravlenij_po_soobshcheniyam': ispravlenij, 'vozvratov_nazad': vozvratov, 'proverka_polej': {'provereno': audit_polej, 'ispravleno': audit_ispr},
     'po_planam': {k: {'progonov': v[0], 'uspeh': v[1]} for k, v in po_planam.items()},
     'prichiny_neudach': dict(prichiny), 'pomehi_vstrecheno': dict(pomehi),
     'minut_runnera': minuty, 'po_rabotam': po_rabotam, 'neudachi': neudachi[:30],
@@ -98,6 +100,7 @@ L = ["# Itog trenirovki: mastera", "", f"run {itog['run']}, commit {str(itog['sh
      f"- tochnost itoga (opisanie vs poluchennoe): {itog['tochnost_itoga_srednyaya']} po {len(tochn)} progonam",
      f"- stranic mastera bez ostanovki podryad: max {itog['max_seriya_stranic']}, srednee po rabotam {itog['srednyaya_max_seriya']}, vsego projdeno {stranic_ok}",
      f"- ispravlenij po soobshcheniyam sajta: {ispravlenij}, vozvratov nazad: {vozvratov}",
+     f"- proverka polej pered biletom: provereno {audit_polej}, ispravleno {audit_ispr}",
      f"- minut runnera: {minuty}", "", "## Po planam", ""]
 L += [f"- {k}: {v['uspeh']}/{v['progonov']}" for k, v in sorted(itog['po_planam'].items())]
 L += ["", "## Prichiny neudach", ""] + ([f"- {k}: {v}" for k, v in prichiny.most_common()] or ["- net"])

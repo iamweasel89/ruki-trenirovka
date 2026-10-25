@@ -37,7 +37,7 @@ if (-not $planOk) {
   exit 0
 }
 $rez = [ordered]@{ plan = $pl.imya; rezhim = $Rezhim; ok = $false; gotovo_k_otpravke = $false; otpravleno = $false
-  shagi = @(); ostanovka = $null; ispravleniya = @(); vozvratov = 0; svodka_krugov = 0; itog = $null; bilet = $null; pomehi = @{}; ms = 0 }
+  shagi = @(); ostanovka = $null; ispravleniya = @(); vozvratov = 0; svodka_krugov = 0; proverka_polej = $null; itog = $null; bilet = $null; pomehi = @{}; ms = 0 }
 $ctx = @{ Doc = $null; Okno = $null; Hwnd = [IntPtr]::Zero; Url = $null; Plan = $pl; Pomehi = @{}; EstParol = $false
           TerpenieMs = $TerpenieMs; PoslednijVvod = [Environment]::TickCount; NuzhenKlik = $false; Cel = @{} }
 
@@ -216,11 +216,34 @@ function New-Itog($sv) {
     $ip = @($rez.ispravleniya | ForEach-Object { "$($_.metka): $lq$($_.bylo)$rq $ar $lq$($_.stalo)$rq ($($_.soobshchenie))" })
     $txt += ' ' + (& $Uni '\u0418\u0441\u043f\u0440\u0430\u0432\u043b\u0435\u043d\u043e \u043f\u043e \u0441\u043e\u043e\u0431\u0449\u0435\u043d\u0438\u044f\u043c \u0441\u0430\u0439\u0442\u0430') + ': ' + ($ip -join '; ') + '.'
   }
+  if ($rez.proverka_polej) { $txt += ' ' + (& $Uni '\u041f\u043e\u043b\u044f \u043f\u0440\u043e\u0432\u0435\u0440\u0435\u043d\u044b \u043d\u0430 \u0448\u0430\u0433\u0430\u0445') + ": $($rez.proverka_polej.sovpalo) / $($rez.proverka_polej.polej)" + $(if ($rez.proverka_polej.ispravleno) { ', ' + (& $Uni '\u0438\u0441\u043f\u0440\u0430\u0432\u043b\u0435\u043d\u043e') + ": $($rez.proverka_polej.ispravleno)" } else { '' }) + '.' }
   $txt += ' ' + (& $Uni '\u041a\u043d\u043e\u043f\u043a\u0430 \u043e\u0442\u043f\u0440\u0430\u0432\u043a\u0438') + ": $lq$($pl.final.metka)$rq."
   # the ticket binds exactly what the summary shows and the button that will be pressed
   $osnova = (@($sv.Polya | ForEach-Object { "$($_.id)|$($_.metka)|$($_.pokaz)" }) + @($sv.Prochee) + @("final|$($pl.final.metka)", "plan|$($pl.imya)")) -join "`n"
   return @{ Itog = [ordered]@{ tekst = $txt; polya = @($sv.Polya); prochee = @($sv.Prochee); knopka = [string]$pl.final.metka; ispravleniya = @($rez.ispravleniya) }; Bilet = (Get-Hash $osnova) }
 }
+
+# press Back until the step with this heading is on screen; returns the new current step
+function Go-NaShag([string]$celZag, $c) {
+  for ($i = 0; $i -lt 12; $i++) {
+    if ($c.Vid -eq 'shag' -and [string]$c.Shag.zagolovok -eq $celZag) { return $c }
+    $r = Press-Knopka $pl.knopki.nazad @()
+    if ($r.Status -ne 'ok') { Stop-Skill $c.Tekst $r.Prichina 'nazad' }
+    $ish = Wait-Ishod $c.Tekst
+    if ($ish.Vid -ne 'smena') { Stop-Skill $c.Tekst 'nazad-ne-srabotal' $ish.Vid }
+    $c = $ish.Cur
+    $rez.vozvratov++
+  }
+  if ($c.Vid -eq 'shag' -and [string]$c.Shag.zagolovok -eq $celZag) { return $c }
+  Stop-Skill $c.Tekst 'nazad-ne-doshli' $celZag
+}
+
+# the summary does not show what will really be sent: before the ticket the FIELDS themselves
+# are checked in one pass from the first step to the summary (audit). net -> idet -> gotov
+$audit = 'net'
+$auditPolya = @{}
+$auditIspr = 0
+$auditProhodov = 0
 
 # ---- the run
 $posetil = New-Object System.Collections.Generic.List[string]
@@ -252,8 +275,22 @@ while ($true) {
       Save-Rez
       exit 0
     }
+    if ($audit -eq 'idet') { $audit = 'gotov' }
     $sv = Test-Svodka $cur.Obzor
+    if (@($sv.Rash).Count -eq 0 -and $audit -ne 'gotov') {
+      $auditProhodov++
+      if ($auditProhodov -gt 3) { Stop-Skill $cur.Tekst 'polya-ne-provereny' 'audit ne zavershilsya' }
+      Write-RukiLog "svodka soshlas; proverka polej s pervogo shaga (prohod $auditProhodov)"
+      $audit = 'idet'; $auditPolya = @{}; $auditIspr = 0
+      $cur = Go-NaShag $posetil[0] $cur
+      continue
+    }
     if (@($sv.Rash).Count -eq 0) {
+      # every field of every unconditional step must have been seen in the audit pass
+      $nevid = @()
+      foreach ($sh0 in @($pl.shagi)) { if ($sh0.uslovnyj -and -not $posetil.Contains([string]$sh0.zagolovok)) { continue }; foreach ($p0 in @($sh0.polya)) { if (-not $auditPolya.ContainsKey([string]$p0.id)) { $nevid += [string]$p0.id } } }
+      if ($nevid.Count) { Stop-Skill $cur.Tekst 'polya-ne-provereny' ($nevid -join ',') }
+      $rez.proverka_polej = [ordered]@{ prohodov = $auditProhodov; polej = $auditPolya.Count; sovpalo = @($auditPolya.Values | Where-Object { $_ -eq 'ok' }).Count; ispravleno = $auditIspr; polya = $auditPolya }
       $it = New-Itog $sv
       $rez.itog = $it.Itog; $rez.bilet = $it.Bilet
       $rez.ok = $true; $rez.gotovo_k_otpravke = $true
@@ -264,22 +301,13 @@ while ($true) {
     $rez.svodka_krugov++
     $opis = (@($sv.Rash | ForEach-Object { "$($_.metka): zhdali '$($_.zhdali)' vidim '$($_.vidim)'" }) -join '; ')
     Write-RukiLog "svodka razoshlas: $opis"
-    if ($rez.svodka_krugov -gt 3) { Stop-Skill $cur.Tekst 'svodka-ne-soshlas' $opis }
+    if ($rez.svodka_krugov -gt 4) { Stop-Skill $cur.Tekst 'svodka-ne-soshlas' $opis }
     Add-Pomeha $ctx 'svodka-rashozhdenie'
     $cel = [string]$sv.Rash[0].shag
     if (-not $posetil.Contains($cel)) { Stop-Skill $cur.Tekst 'shag-plana-ne-pokazan' "$cel; $opis" }
-    # back to the step that holds the first wrong value
-    $doshli = $false
-    for ($i = 0; $i -lt 12 -and -not $doshli; $i++) {
-      $r = Press-Knopka $pl.knopki.nazad @()
-      if ($r.Status -ne 'ok') { Stop-Skill $cur.Tekst $r.Prichina 'nazad' }
-      $ish = Wait-Ishod $cur.Tekst
-      if ($ish.Vid -ne 'smena') { Stop-Skill $cur.Tekst 'nazad-ne-srabotal' $ish.Vid }
-      $cur = $ish.Cur
-      $rez.vozvratov++
-      if ($cur.Vid -eq 'shag' -and [string]$cur.Shag.zagolovok -eq $cel) { $doshli = $true }
-    }
-    if (-not $doshli) { Stop-Skill $cur.Tekst 'nazad-ne-doshli' $cel }
+    # back to the step that holds the first wrong value; an audit in progress is broken
+    $audit = 'net'
+    $cur = Go-NaShag $cel $cur
     Write-RukiLog "vernulis na shag: $cel"
     continue
   }
@@ -294,6 +322,13 @@ while ($true) {
   $nShaga++
   $t0 = $sw.ElapsedMilliseconds
   Write-RukiLog "shag $($cur.Nomer)/$($cur.Iz): $zag"
+  if ($audit -eq 'idet') {
+    foreach ($p in @($sh.polya)) {
+      $vNorme = Test-PoleVNorme $p
+      $auditPolya[[string]$p.id] = if ($vNorme) { 'ok' } else { 'ispravleno' }
+      if (-not $vNorme) { $auditIspr++; Add-Pomeha $ctx 'proverka-polej-ispravila'; Write-RukiLog "proverka polej: $($p.id) razoshlos, ispravlyayu" }
+    }
+  }
   foreach ($p in @($sh.polya)) {
     $r = Invoke-Pole $p
     if ($r.Status -ne 'ok') {
