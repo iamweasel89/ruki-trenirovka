@@ -85,6 +85,7 @@ itog = {
     'po_stranicam': {k: {'progonov': v[0], 'uspeh': v[1]} for k, v in po_stranicam.items()},
     'prichiny_neudach': dict(prichiny), 'pomehi_vstrecheno': dict(pomehi),
     'minut_runnera_matrica': minuty, 'po_rabotam': po_rabotam, 'neudachi': neudachi[:30],
+    'primer_progona': (raboty[0].get('progony') or [None])[0] if raboty else None,
     'damp_dereva': next((rb.get('damp') for rb in raboty if rb.get('damp')), None),
 }
 with open(os.path.join(dst, 'itog.json'), 'w', encoding='utf-8') as f:

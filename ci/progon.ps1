@@ -42,9 +42,11 @@ for ($r = 0; $r -lt $Progonov; $r++) {
   Remove-Item $out, $log -ErrorAction SilentlyContinue
   $errF = Join-Path $tmp "err_$s.txt"; $soF = Join-Path $tmp "so_$s.txt"
   $zapuskOshibka = $null
+  $skSw = [Diagnostics.Stopwatch]::StartNew()
   try {
-    $p = Start-Process powershell -ArgumentList @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', (Join-Path $koren 'skills\zapolnit-formu.ps1'), '-Plan', $planPut, '-Vyhod', $out) -PassThru -NoNewWindow -RedirectStandardError $errF -RedirectStandardOutput $soF
-    if (-not $p.WaitForExit(240000)) { Stop-Process $p -Force -ErrorAction SilentlyContinue }
+    $vyvod = & powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $koren 'skills\zapolnit-formu.ps1') -Plan $planPut -Vyhod $out 2>&1 | Out-String
+    $vyvod | Out-File -FilePath $soF -Encoding utf8
+    $zapuskOshibka = "kod=$LASTEXITCODE ms=$($skSw.ElapsedMilliseconds) est_vyhod=$(Test-Path $out)"
   } catch { $zapuskOshibka = $_.Exception.Message }
   $skill = if (Test-Path $out) { Get-Content -Raw -Encoding UTF8 $out | ConvertFrom-Json } else { $null }
 

@@ -14,6 +14,7 @@ $koren = Split-Path -Parent $PSScriptRoot
 . (Join-Path $koren 'lib\vvod.ps1')
 
 $sw = [Diagnostics.Stopwatch]::StartNew()
+Write-RukiLog "start plan=$Plan"
 $plan = Get-Content -Raw -Encoding UTF8 $Plan | ConvertFrom-Json
 $rez = [ordered]@{ plan = $plan.imya; ok = $false; shagi = @(); ostanovka = $null; pomehi = @{}; stranica = $null; ms = 0 }
 
