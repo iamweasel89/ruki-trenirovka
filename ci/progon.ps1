@@ -82,7 +82,7 @@ for ($r = 0; $r -lt $Progonov; $r++) {
   }
   if (-not $damp -and $o -and $r -eq 0) { $damp = (Get-DampDereva $o.Doc 0 8) -join "`n" }
   if ($job) { Stop-Job $job -ErrorAction SilentlyContinue; Remove-Job $job -Force -ErrorAction SilentlyContinue }
-  $logTail = if (Test-Path $log) { @(Get-Content $log -Encoding UTF8 | Select-Object -Last 25) } else { @() }
+  $logTail = @(); if (Test-Path $log) { $logTail += @(Get-Content $log -Encoding UTF8 | Select-Object -Last 25) }
   if ($zapuskOshibka) { $logTail += "ZAPUSK: $zapuskOshibka" }
   foreach ($ff in @($errF, $soF)) { if (Test-Path $ff) { $logTail += @(Get-Content $ff -Encoding UTF8 | Select-Object -Last 15) } }
   $vse += [ordered]@{

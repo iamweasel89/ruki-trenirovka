@@ -15,8 +15,8 @@ $koren = Split-Path -Parent $PSScriptRoot
 
 $sw = [Diagnostics.Stopwatch]::StartNew()
 Write-RukiLog "start plan=$Plan"
-$plan = Get-Content -Raw -Encoding UTF8 $Plan | ConvertFrom-Json
-$rez = [ordered]@{ plan = $plan.imya; ok = $false; shagi = @(); ostanovka = $null; pomehi = @{}; stranica = $null; ms = 0 }
+$pl = Get-Content -Raw -Encoding UTF8 $Plan | ConvertFrom-Json
+$rez = [ordered]@{ plan = $pl.imya; ok = $false; shagi = @(); ostanovka = $null; pomehi = @{}; stranica = $null; ms = 0 }
 
 function Save-Rez {
   $rez.ms = [int]$sw.ElapsedMilliseconds
@@ -30,10 +30,10 @@ function Stop-Skill($n, $shag, [string]$prichina, [string]$podrobno = '') {
   exit 0
 }
 
-$ctx = @{ Doc = $null; Okno = $null; Hwnd = [IntPtr]::Zero; Plan = $plan; Pomehi = @{}; EstParol = $false }
+$ctx = @{ Doc = $null; Okno = $null; Hwnd = [IntPtr]::Zero; Plan = $pl; Pomehi = @{}; EstParol = $false }
 
 # 1. page check
-$o = Wait-Stranica $plan.stranica $TimeoutStranicyMs
+$o = Wait-Stranica $pl.stranica $TimeoutStranicyMs
 if (-not $o) { $rez.ostanovka = [ordered]@{ shag = 0; prichina = 'net-stranicy' }; Save-Rez; exit 0 }
 $ctx.Doc = $o.Doc; $ctx.Okno = $o.Okno; $ctx.Hwnd = $o.Hwnd
 $rez.stranica = [ordered]@{ po_url = $o.PoUrl }
@@ -107,7 +107,7 @@ function Press-Knopka($n, $shag, $polya) {
 # 2. steps
 $polya = @()
 $n = 0
-foreach ($shag in $plan.shagi) {
+foreach ($shag in $pl.shagi) {
   $n++
   $t0 = $sw.ElapsedMilliseconds
   if ($shag.tip -eq 'knopka') { $r = Press-Knopka $n $shag $polya; $polya = @() }
