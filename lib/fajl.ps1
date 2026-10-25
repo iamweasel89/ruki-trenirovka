@@ -43,6 +43,36 @@ public static class RukiDialog {
     }, IntPtr.Zero);
     return res.ToArray();
   }
+  delegate bool ChildProc(IntPtr h, IntPtr l);
+  [DllImport("user32.dll")] static extern bool EnumChildWindows(IntPtr p, ChildProc f, IntPtr l);
+  [DllImport("user32.dll")] static extern int GetDlgCtrlID(IntPtr h);
+  [DllImport("user32.dll", CharSet = CharSet.Unicode)] static extern IntPtr SendMessageTimeout(IntPtr h, uint m, IntPtr w, string l, uint fl, uint ms, out IntPtr r);
+  [DllImport("user32.dll", CharSet = CharSet.Unicode)] static extern IntPtr SendMessageTimeout(IntPtr h, uint m, IntPtr w, StringBuilder l, uint fl, uint ms, out IntPtr r);
+  [DllImport("user32.dll")] static extern IntPtr SendMessageTimeout(IntPtr h, uint m, IntPtr w, IntPtr l, uint fl, uint ms, out IntPtr r);
+  // a descendant window with this control id (the dialog nests its controls)
+  public static IntPtr PoId(IntPtr p, int id) {
+    IntPtr res = IntPtr.Zero;
+    EnumChildWindows(p, delegate (IntPtr h, IntPtr l) { if (GetDlgCtrlID(h) == id) { res = h; return false; } return true; }, IntPtr.Zero);
+    return res;
+  }
+  // the Edit window of a combo box (or the window itself when it is an Edit)
+  public static IntPtr Edit(IntPtr h) {
+    if (h == IntPtr.Zero) return h;
+    if (Klass(h) == "Edit") return h;
+    IntPtr res = IntPtr.Zero;
+    EnumChildWindows(h, delegate (IntPtr c, IntPtr l) { if (Klass(c) == "Edit") { res = c; return false; } return true; }, IntPtr.Zero);
+    return res;
+  }
+  // WM_SETTEXT / WM_GETTEXT with a time limit (a hung dialog never blocks the caller)
+  public static bool ZadatTekst(IntPtr h, string s) { IntPtr r; return SendMessageTimeout(h, 0x000C, IntPtr.Zero, s, 2, 2000, out r) != IntPtr.Zero; }
+  public static string Prochitat(IntPtr h) {
+    IntPtr r;
+    if (SendMessageTimeout(h, 0x000E, IntPtr.Zero, IntPtr.Zero, 2, 2000, out r) == IntPtr.Zero) return null;
+    int n = (int)r;
+    StringBuilder sb = new StringBuilder(n + 2);
+    if (SendMessageTimeout(h, 0x000D, (IntPtr)(n + 1), sb, 2, 2000, out r) == IntPtr.Zero) return null;
+    return sb.ToString();
+  }
   // all top-level #32770 of any process
   public static IntPtr[] VseDialogi() {
     List<IntPtr> res = new List<IntPtr>();
@@ -69,7 +99,7 @@ $KeshTeksta.TreeScope = $TS::Element
 function Test-DialogFajla([IntPtr]$h) {
   $v = [RukiDialog]::Vladelec($h)
   if ($v -ne [IntPtr]::Zero -and [RukiDialog]::Klass($v) -eq '#32770') { return $false }
-  if ([RukiDialog]::GetDlgItem($h, 1148) -ne [IntPtr]::Zero) { return $true }
+  if ([RukiDialog]::PoId($h, 1148) -ne [IntPtr]::Zero) { return $true }
   try {
     $el = $AE::FromHandle($h)
     $c = New-OrCond @((New-PropCond $AE::AutomationIdProperty '1148'), (New-PropCond $AE::ClassNameProperty 'DUIViewWndClassName'))
@@ -131,49 +161,75 @@ function Wait-DialogZakryt([IntPtr]$dlg, [int]$TimeoutMs = 4000) {
 # the "File name" edit box of the dialog: by control id (locale independent), then by name
 function Get-PoleImeni([IntPtr]$dlg, [int]$TimeoutMs = 4000) {
   $sw = [Diagnostics.Stopwatch]::StartNew()
-  $imena = @('File name:', [regex]::Unescape('\u0418\u043c\u044f \u0444\u0430\u0439\u043b\u0430:'))
+  # Win32 first: the dialog may live in a sandboxed process whose UIA tree shows bare panes
   do {
-    try {
-      $koren = $AE::FromHandle($dlg)
-      $ed = $koren.FindFirst($TS::Descendants, (New-AndCond @((New-PropCond $AE::ControlTypeProperty $CT::Edit), (New-PropCond $AE::AutomationIdProperty '1148'))))
-      if (-not $ed) {
-        $cb = $koren.FindFirst($TS::Descendants, (New-AndCond @((New-PropCond $AE::ControlTypeProperty $CT::ComboBox), (New-PropCond $AE::AutomationIdProperty '1148'))))
-        if ($cb) { $ed = $cb.FindFirst($TS::Descendants, (New-PropCond $AE::ControlTypeProperty $CT::Edit)) }
-      }
-      if (-not $ed) {
-        foreach ($n in $imena) {
-          $ed = $koren.FindFirst($TS::Descendants, (New-AndCond @((New-PropCond $AE::ControlTypeProperty $CT::Edit), (New-PropCond $AE::NameProperty $n))))
-          if ($ed) { break }
-        }
-      }
-      if ($ed) { return $ed }
-    } catch {}
+    $h = [RukiDialog]::Edit([RukiDialog]::PoId($dlg, 1148))
+    if ($h -ne [IntPtr]::Zero) { return [pscustomobject]@{ Hwnd = $h; El = $null } }
+    $el = Get-PoleImeniUia $dlg
+    if ($el) { return [pscustomobject]@{ Hwnd = [IntPtr]::Zero; El = $el } }
     Start-Sleep -Milliseconds 150
   } while ($sw.ElapsedMilliseconds -lt $TimeoutMs)
   return $null
 }
 
-# put text into the file name box: ValuePattern first, typing as a fallback (dialog must be in front)
+function Get-ZnacheniePolya($pole) {
+  if ($pole.Hwnd -ne [IntPtr]::Zero) { return [RukiDialog]::Prochitat($pole.Hwnd) }
+  return Get-Znachenie $pole.El
+}
+
+function Wait-ZnacheniePolya($pole, [string]$ozhid, [int]$TimeoutMs = 800) {
+  $sw = [Diagnostics.Stopwatch]::StartNew()
+  do {
+    $v = Get-ZnacheniePolya $pole
+    if ($v -ceq $ozhid) { return $v }
+    Start-Sleep -Milliseconds 60
+  } while ($sw.ElapsedMilliseconds -lt $TimeoutMs)
+  return $v
+}
+
+function Get-PoleImeniUia([IntPtr]$dlg) {
+  $imena = @('File name:', [regex]::Unescape('\u0418\u043c\u044f \u0444\u0430\u0439\u043b\u0430:'))
+  try {
+    $koren = $AE::FromHandle($dlg)
+    $ed = $koren.FindFirst($TS::Descendants, (New-AndCond @((New-PropCond $AE::ControlTypeProperty $CT::Edit), (New-PropCond $AE::AutomationIdProperty '1148'))))
+    if (-not $ed) {
+      $cb = $koren.FindFirst($TS::Descendants, (New-AndCond @((New-PropCond $AE::ControlTypeProperty $CT::ComboBox), (New-PropCond $AE::AutomationIdProperty '1148'))))
+      if ($cb) { $ed = $cb.FindFirst($TS::Descendants, (New-PropCond $AE::ControlTypeProperty $CT::Edit)) }
+    }
+    if (-not $ed) {
+      foreach ($n in $imena) {
+        $ed = $koren.FindFirst($TS::Descendants, (New-AndCond @((New-PropCond $AE::ControlTypeProperty $CT::Edit), (New-PropCond $AE::NameProperty $n))))
+        if ($ed) { break }
+      }
+    }
+    return $ed
+  } catch { return $null }
+}
+
+# put text into the file name box: WM_SETTEXT / ValuePattern first, typing as a fallback
+# (typing needs the dialog in front)
 function Set-PoleImeni($ctx, [IntPtr]$dlg, $pole, [string]$s) {
   for ($i = 1; $i -le 3; $i++) {
-    try { $pole.GetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern).SetValue($s) } catch { Write-RukiLog "dialog: SetValue $($_.Exception.Message)" }
-    if ((Wait-Znachenie $pole $s 800) -ceq $s) { return $true }
+    if ($pole.Hwnd -ne [IntPtr]::Zero) { $null = [RukiDialog]::ZadatTekst($pole.Hwnd, $s) }
+    else { try { $pole.El.GetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern).SetValue($s) } catch { Write-RukiLog "dialog: SetValue $($_.Exception.Message)" } }
+    if ((Wait-ZnacheniePolya $pole $s 800) -ceq $s) { return $true }
     Start-Sleep -Milliseconds 150
   }
   Add-Pomeha $ctx 'dialog-vvod-klavishami'
-  Write-RukiLog 'dialog: SetValue ne proshel, pechatayu'
+  Write-RukiLog 'dialog: tekst ne zadalsya, pechatayu'
   $null = [RukiOkno]::Vperyod($dlg)
-  try { $pole.SetFocus() } catch {}
+  if ($pole.El) { try { $pole.El.SetFocus() } catch {} }
   Start-Sleep -Milliseconds 150
   if ((Get-PerednijRoot) -ne $dlg) { return $false }
   Send-Klavisha 'CtrlA'; Send-Klavisha 'Delete'
   $null = Send-Tekst $s 8 $dlg
-  return ((Wait-Znachenie $pole $s 1000) -ceq $s)
+  return ((Wait-ZnacheniePolya $pole $s 1000) -ceq $s)
 }
 
 # press a dialog button by control id (1 = Open, 2 = Cancel) without focus
 function Invoke-KnopkaDialoga([IntPtr]$dlg, [int]$id) {
   $b = [RukiDialog]::GetDlgItem($dlg, $id)
+  if ($b -eq [IntPtr]::Zero) { $b = [RukiDialog]::PoId($dlg, $id) }
   if ($b -ne [IntPtr]::Zero) { return [RukiDialog]::Klik($b) }
   try {
     $el = $AE::FromHandle($dlg).FindFirst($TS::Descendants, (New-AndCond @((New-PropCond $AE::AutomationIdProperty ([string]$id)), (New-OrCond @((New-PropCond $AE::ControlTypeProperty $CT::Button), (New-PropCond $AE::ControlTypeProperty $CT::SplitButton))))))
@@ -343,7 +399,7 @@ function Invoke-ZagruzkaFajla($ctx, $shag) {
       if (-not (Set-PoleImeni $ctx $dlg $pole $papka)) { $null = Close-DialogFajla $dlg; return @{ Status = 'stop'; Prichina = 'put-ne-vstavlen'; Popytki = $pop } }
       $null = Invoke-KnopkaDialoga $dlg 1
       $sw = [Diagnostics.Stopwatch]::StartNew()
-      while ($sw.ElapsedMilliseconds -lt 3000 -and (Get-Znachenie $pole) -ceq $papka) { Start-Sleep -Milliseconds 100 }
+      while ($sw.ElapsedMilliseconds -lt 3000 -and (Get-ZnacheniePolya $pole) -ceq $papka) { Start-Sleep -Milliseconds 100 }
       Start-Sleep -Milliseconds 300
       if (-not [RukiDialog]::IsWindow($dlg)) { return @{ Status = 'stop'; Prichina = 'dialog-zakrylsya-na-papke'; Popytki = $pop } }
       $pole = Get-PoleImeni $dlg
