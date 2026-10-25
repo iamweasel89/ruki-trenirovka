@@ -40,7 +40,7 @@ function Stop-Skill($n, $shag, [string]$prichina, [string]$podrobno = '') {
 }
 
 $ctx = @{ Doc = $null; Okno = $null; Hwnd = [IntPtr]::Zero; Url = $null; Plan = $pl; Pomehi = @{}; EstParol = $false
-          TerpenieMs = $TerpenieMs; PoslednijVvod = [Environment]::TickCount }
+          TerpenieMs = $TerpenieMs; PoslednijVvod = [Environment]::TickCount; NuzhenKlik = $false }
 
 # 1. page check
 $o = Wait-Stranica $pl.stranica $TimeoutStranicyMs
@@ -73,6 +73,7 @@ function Sync-Forma($polya) {
     $ispr = 0
     foreach ($p in $polya) {
       $el = Find-Element $ctx.Doc $p.id $p.metka $p.tip 3000
+      if (-not $el) { $el = Find-V $ctx $p $p.tip }
       $val = Get-ZnachenieUstojchivo $el
       $cel = if ($p.tip -eq 'flazhok') { [bool]$p.znachenie } else { ([string]$p.znachenie) -replace "`r`n", "`n" }
       if ($el -and ($val -ceq $cel)) { continue }
@@ -105,7 +106,7 @@ function Press-Knopka($n, $shag, $polya) {
   for ($pop = 1; $pop -le 4; $pop++) {
     $s = Sync-Ustojchivo $polya
     if ($s.Status -ne 'ok') { return $s }
-    $b = Find-Element $ctx.Doc $shag.id $shag.metka 'knopka' $TerpenieMs
+    $b = Find-V $ctx $shag 'knopka'
     if (-not $b) { return @{ Status = 'stop'; Prichina = 'net-knopki' } }
     $t = [Diagnostics.Stopwatch]::StartNew()
     while (-not $b.Current.IsEnabled -and $t.ElapsedMilliseconds -lt 3000) { Start-Sleep -Milliseconds 150 }
@@ -122,7 +123,7 @@ function Press-Knopka($n, $shag, $polya) {
     try { $b.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern).Invoke() }
     catch { try { if (Test-OknoVperedi $ctx.Hwnd) { $b.SetFocus(); Send-Klavisha 'Enter' } } catch {} }
     if (-not $shag.posle) { Start-Sleep -Milliseconds 500; return @{ Status = 'ok'; Popytki = $pop } }
-    $p = Find-Element $ctx.Doc $shag.posle.id $shag.posle.metka $shag.posle.tip $TerpenieMs
+    $p = Find-V $ctx $shag.posle $shag.posle.tip
     if ($p) { return @{ Status = 'ok'; Popytki = $pop } }
     Write-RukiLog "posle nazhatiya $($shag.id) ne poyavilos $($shag.posle.id)"
     # a final button is never pressed twice: no confirmation means an honest stop

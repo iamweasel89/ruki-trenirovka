@@ -128,6 +128,11 @@ function Find-Element($doc, [string]$id, [string]$metka, [string]$tip, [int]$Tim
   return $null
 }
 
+# is there a password field anywhere in the document right now
+function Test-EstParolVDoc($doc) {
+  try { return [bool]$doc.FindFirst($TS::Descendants, (New-PropCond $AE::IsPasswordProperty $true)) } catch { return $false }
+}
+
 function Test-Parol($el) {
   if (-not $el) { return $false }
   try {

@@ -81,9 +81,17 @@ function Close-Dialog($ctx) {
 function Confirm-Gotovnost($ctx, $el) {
   for ($i = 0; $i -lt 5; $i++) {
     $ok = Confirm-OknoVidimo $ctx.Hwnd
-    if ($ok.Bylo) { Add-Pomeha $ctx 'okno' }
+    if ($ok.Bylo) { Add-Pomeha $ctx 'okno'; $ctx.NuzhenKlik = $true }
     if (-not $ok.Ok) { continue }
     if (Find-Dialog $ctx.Doc) { $null = Close-Dialog $ctx; continue }
+    if ($ctx.NuzhenKlik) {
+      # after the window came back UIA may report our focus while keys go elsewhere
+      $ctx.NuzhenKlik = $false
+      try { $el.SetFocus() } catch {}
+      # the click puts the caret where it lands: move it back to the end
+      if (Invoke-KlikVElement $ctx.Hwnd $el) { Add-Pomeha $ctx 'klik-fokus'; Send-Klavisha 'CtrlEnd' }
+      Start-Sleep -Milliseconds 100
+    }
     $f = Get-Fokus
     if (Test-TotZhe $f $el) { return 'ok' }
     if (Test-Parol $f) { Write-RukiLog 'fokus v pole parolya' }
@@ -120,12 +128,38 @@ function Get-ZnachenieUstojchivo($el) {
   return $a
 }
 
+# find an element while keeping our window visible: search in slices, restore between them
+function Find-V($ctx, $shag, [string]$tip) {
+  $sw = [Diagnostics.Stopwatch]::StartNew()
+  do {
+    $ok = Confirm-OknoVidimo $ctx.Hwnd
+    if ($ok.Bylo) { Add-Pomeha $ctx 'okno'; $ctx.NuzhenKlik = $true }
+    $el = Find-Element $ctx.Doc $shag.id $shag.metka $tip 2500
+    if ($el) { return $el }
+    if (-not (Test-Zhivoj $ctx.Doc)) { return $null }
+  } while ($sw.ElapsedMilliseconds -lt $ctx.TerpenieMs)
+  return $null
+}
+
+# keystrokes went into a password field by accident: take back exactly the lost ones
+function Undo-VParole($ctx, $el, [string]$nabrano) {
+  $f = Get-Fokus
+  if (-not (Test-Parol $f)) { return }
+  $v = [string](Get-Znachenie $el)
+  $poteryano = $nabrano.Length - $v.Length
+  if (-not $nabrano.StartsWith($v) -or $poteryano -le 0) { return }
+  Add-Pomeha $ctx 'otkat-v-parole'
+  Write-RukiLog "otkat: $poteryano simv. ushli v pole parolya, stirayu"
+  for ($i = 0; $i -lt [Math]::Min($poteryano, 16); $i++) { if (Test-OknoVperedi $ctx.Hwnd) { Send-Klavisha 'Backspace'; Start-Sleep -Milliseconds 15 } }
+}
+
 # type a value into a text-like field. returns @{ Status = ok|stop; Prichina; Popytki }
 function Set-Tekst($ctx, $shag, [int]$kusok = 8) {
   $cel = ([string]$shag.znachenie) -replace "`r`n", "`n"
   for ($pop = 1; $pop -le 6; $pop++) {
-    $el = Find-Element $ctx.Doc $shag.id $shag.metka $shag.tip $ctx.TerpenieMs
+    $el = Find-V $ctx $shag $shag.tip
     if (-not $el) { return @{ Status = 'stop'; Prichina = 'net-elementa'; Popytki = $pop } }
+    if (-not $ctx.EstParol -and (Test-EstParolVDoc $ctx.Doc)) { $ctx.EstParol = $true }
     if (Test-Parol $el) { return @{ Status = 'stop'; Prichina = 'pole-parolya'; Popytki = $pop } }
     $g = Confirm-Gotovnost $ctx $el
     if ($g -ne 'ok') { continue }
@@ -156,13 +190,24 @@ function Set-Tekst($ctx, $shag, [int]$kusok = 8) {
       if (-not $ctx.EstParol -and (Find-Dialog $ctx.Doc)) { $null = Close-Dialog $ctx; $sboj = $true; break }
       $n = [Math]::Min($k, $ost.Length)
       $ch = $ost.Substring(0, $n)
+      $do = [string](Get-Znachenie $el)
       $nn = Send-Tekst $ch 12 $ctx.Hwnd
       Set-MetkaVvoda $ctx
-      if ($nn -lt $n) { Add-Pomeha $ctx 'vvod-prervan'; $sboj = $true; break }
+      if ($nn -lt $n) { Add-Pomeha $ctx 'vvod-prervan'; Undo-VParole $ctx $el ($nabrano + $ch.Substring(0, $nn)); $sboj = $true; break }
       $nabrano += $ch; $ost = $ost.Substring($n)
+      if ($ctx.EstParol) {
+        $f = Get-Fokus
+        if (-not (Test-TotZhe $f $el)) { Start-Sleep -Milliseconds 60; Undo-VParole $ctx $el $nabrano; $sboj = $true; break }
+      }
       if ($k -gt 1 -or $ost.Length -eq 0 -or ($nabrano.Length % 8) -eq 0) {
         $v = Wait-Znachenie $el $nabrano 900
-        if ($v -cne $nabrano) { Write-RukiLog "sverka kuska: zhdali $($nabrano.Length), vidim $(([string]$v).Length)"; $sboj = $true; break }
+        if ($v -cne $nabrano) {
+          Write-RukiLog "sverka kuska: zhdali $($nabrano.Length), vidim $(([string]$v).Length)"
+          Undo-VParole $ctx $el $nabrano
+          # nothing of the chunk landed although UIA showed our focus: click into the field next time
+          if ([string]$v -ceq $do) { $ctx.NuzhenKlik = $true; Add-Pomeha $ctx 'vvod-ne-doshel' }
+          $sboj = $true; break
+        }
       }
     }
     if ($sboj) { continue }
@@ -175,7 +220,7 @@ function Set-Tekst($ctx, $shag, [int]$kusok = 8) {
 function Set-Flazhok($ctx, $shag) {
   $cel = [bool]$shag.znachenie
   for ($pop = 1; $pop -le 5; $pop++) {
-    $el = Find-Element $ctx.Doc $shag.id $shag.metka 'flazhok' $ctx.TerpenieMs
+    $el = Find-V $ctx $shag 'flazhok'
     if (-not $el) { return @{ Status = 'stop'; Prichina = 'net-elementa'; Popytki = $pop } }
     $ok = Confirm-OknoVidimo $ctx.Hwnd
     if ($ok.Bylo) { Add-Pomeha $ctx 'okno' }
