@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><title>Полигон — Профиль</title>
+<link rel="stylesheet" href="stil.css">
+<style>
+#prevyu { max-width: 160px; max-height: 160px; display: block; margin: 8px 0; border: 1px solid #999; }
+.oshibka { color: #a00; min-height: 1.2em; }
+.sluzhebnoe { font-size: 10px; height: 2em; opacity: .4; }
+#holst { border: 1px dashed #666; display: block; margin: 8px 0; max-width: 100%; }
+</style></head>
+<body>
+<header><b>Полигон</b><input id="poisk" type="text" aria-label="Поиск по сайту" placeholder="Поиск"></header>
+<main>
+<h1>Профиль</h1>
+<form id="forma" hidden onsubmit="return false">
+  <label>Имя в профиле <input id="imya_profilya" type="text" aria-label="Имя в профиле"></label>
+  <p>Фото профиля:</p>
+  <img id="prevyu" alt="Предпросмотр фото" hidden>
+  <p id="foto-imya">Фото не выбрано</p>
+  <p id="foto-oshibka" class="oshibka" role="alert"></p>
+  <input id="foto-fajl" type="file" accept="image/*" hidden>
+  <button type="button" id="foto-zagruzit">Загрузить фото</button>
+  <button type="button" id="sohranit" disabled>Сохранить профиль</button>
+</form>
+<textarea id="sostoyanie" class="sluzhebnoe" readonly aria-label="Состояние загрузки"></textarea>
+</main>
+<script src="pomehi.js"></script>
+<script src="fajl.js"></script>
+<script>
+(function () {
+  var forma = document.getElementById('forma'), input = document.getElementById('foto-fajl');
+  var knopka = document.getElementById('foto-zagruzit'), S = P.sost;
+  function obnovit() { document.getElementById('sohranit').disabled = !document.getElementById('imya_profilya').value.trim(); }
+  forma.addEventListener('input', obnovit);
+  P.otkryvatel(knopka, input);
+  P.otmena(input);
+  var modal = null;
+  function obrezka(d, url) {
+    // a cropping modal: the photo counts only after Save
+    var fon = document.createElement('div');
+    fon.className = 'modal-fon';
+    fon.innerHTML = '<div class="modal" role="dialog" aria-modal="true" aria-label="Обрезка фото" id="obrezka">' +
+      '<h2>Обрезка фото</h2><canvas id="holst" width="240" height="180"></canvas>' +
+      '<button type="button" id="obrezka-otmena">Отмена</button> <button type="button" id="obrezka-sohranit">Сохранить</button></div>';
+    document.body.appendChild(fon); modal = fon;
+    var img = new Image();
+    img.onload = function () { var c = fon.querySelector('canvas').getContext('2d'); c.drawImage(img, 0, 0, 240, 180); c.strokeRect(30, 20, 180, 140); };
+    img.src = url;
+    fon.querySelector('#obrezka-sohranit').addEventListener('click', function () {
+      fon.remove(); modal = null;
+      if (S.foto) S.zamen++;
+      S.foto = d; S.obrezano = true;
+      var p = document.getElementById('prevyu'); p.src = url; p.hidden = false;
+      document.getElementById('foto-imya').textContent = 'Фото: ' + d.imya;
+      knopka.textContent = 'Заменить фото';
+      P.sobytie('obrezka-sohranena');
+    });
+    fon.querySelector('#obrezka-otmena').addEventListener('click', function () { fon.remove(); modal = null; P.sobytie('obrezka-otmenena'); });
+    fon.querySelector('#obrezka-sohranit').focus();
+  }
+  input.addEventListener('change', function () {
+    var f = input.files[0];
+    document.getElementById('foto-oshibka').textContent = '';
+    if (!f) return;
+    P.sobytie('change');
+    if (!/^image\//.test(f.type)) {
+      S.otkloneno.push(f.name); P.sobytie('otkloneno');
+      document.getElementById('foto-oshibka').textContent = 'Файл не принят: нужен рисунок PNG или JPEG';
+      return;
+    }
+    P.prochitat(f, function (d) {
+      if (!d.png) { S.otkloneno.push(f.name); P.sobytie('otkloneno'); document.getElementById('foto-oshibka').textContent = 'Файл не принят: не удалось прочитать рисунок'; return; }
+      obrezka(d, URL.createObjectURL(f));
+    });
+  });
+  forma.addEventListener('click', function (e) {
+    if (e.target.id === 'sohranit' && !e.target.disabled && !modal) P.otpravit(forma);
+  });
+  document.addEventListener('keydown', function (e) { if (modal && e.key === 'Escape') { modal.remove(); modal = null; P.sobytie('obrezka-esc'); } });
+  P.pokazatPozzhe(forma, 200, 1500);
+})();
+</script>
+</body></html>

@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><title>Полигон — Обращение</title>
+<link rel="stylesheet" href="stil.css">
+<style>
+#zona { border: 2px dashed #557; padding: 24px; text-align: center; cursor: pointer; margin: 8px 0; }
+#zona.nad { background: #e6ecff; }
+.oshibka { color: #a00; min-height: 1.2em; }
+.sluzhebnoe { font-size: 10px; height: 2em; opacity: .4; }
+</style></head>
+<body>
+<header><b>Полигон</b><input id="poisk" type="text" aria-label="Поиск по сайту" placeholder="Поиск"></header>
+<main>
+<h1>Обращение</h1>
+<form id="forma" hidden onsubmit="return false">
+  <label>Тема <input id="tema" type="text" aria-label="Тема"></label>
+  <p>Вложения (до пяти файлов):</p>
+  <div id="zona" role="button" tabindex="0" aria-label="Перетащите файлы сюда или нажмите, чтобы выбрать">Перетащите файлы сюда или нажмите, чтобы выбрать</div>
+  <input id="vlozheniya-fajl" type="file" multiple hidden>
+  <ul id="spisok"></ul>
+  <p id="vlozheniya-oshibka" class="oshibka" role="alert"></p>
+  <label>Скан документа <input id="skan" type="file" accept=".png,.pdf,.txt"></label>
+  <p id="skan-imya"></p>
+  <button type="button" id="otpravit" disabled>Отправить обращение</button>
+</form>
+<textarea id="sostoyanie" class="sluzhebnoe" readonly aria-label="Состояние загрузки"></textarea>
+</main>
+<script src="pomehi.js"></script>
+<script src="fajl.js"></script>
+<script>
+(function () {
+  var forma = document.getElementById('forma'), input = document.getElementById('vlozheniya-fajl');
+  var zona = document.getElementById('zona'), S = P.sost;
+  function obnovit() { document.getElementById('otpravit').disabled = !document.getElementById('tema').value.trim(); }
+  forma.addEventListener('input', obnovit);
+  P.otkryvatel(zona, input);
+  P.otmena(input);
+  function prinyat(spisok) {
+    var oshibka = document.getElementById('vlozheniya-oshibka');
+    oshibka.textContent = '';
+    if (S.vlozheniya.length + spisok.length > 5) { spisok.forEach(function (f) { S.otkloneno.push(f.name); }); oshibka.textContent = 'Слишком много файлов: не больше пяти'; P.sobytie('otkloneno'); return; }
+    var ostalos = spisok.length;
+    spisok.forEach(function (f) {
+      P.prochitat(f, function (d) {
+        S.vlozheniya.push(d);
+        var li = document.createElement('li'); li.textContent = d.imya + ' — ' + d.razmer + ' байт';
+        document.getElementById('spisok').appendChild(li);
+        if (--ostalos === 0) P.sobytie('vlozheniya-prinyaty');
+      });
+    });
+  }
+  input.addEventListener('change', function () { var a = Array.prototype.slice.call(input.files); if (a.length) { P.sobytie('change'); prinyat(a); } });
+  // real drag and drop works too
+  zona.addEventListener('dragover', function (e) { e.preventDefault(); zona.classList.add('nad'); });
+  zona.addEventListener('dragleave', function () { zona.classList.remove('nad'); });
+  zona.addEventListener('drop', function (e) { e.preventDefault(); zona.classList.remove('nad'); P.sobytie('drop'); prinyat(Array.prototype.slice.call(e.dataTransfer.files)); });
+  var skan = document.getElementById('skan');
+  P.otmena(skan);
+  skan.addEventListener('change', function () {
+    var f = skan.files[0]; if (!f) return;
+    P.sobytie('change-skan');
+    P.prochitat(f, function (d) { S.skan = d; document.getElementById('skan-imya').textContent = 'Скан: ' + d.imya; P.sobytie('skan-prinyat'); });
+  });
+  forma.addEventListener('click', function (e) {
+    if (e.target.id === 'otpravit' && !e.target.disabled) P.otpravit(forma);
+  });
+  P.pokazatPozzhe(forma, 200, 1500);
+})();
+</script>
+</body></html>

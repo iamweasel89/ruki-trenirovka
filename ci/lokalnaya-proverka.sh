@@ -7,8 +7,10 @@ PW=${1:-pwsh}
 echo "[1/4] gigiena"; ./ci/proverka-gigieny.sh | tail -1
 echo "[2/4] parse ps1"
 "$PW" -NoProfile -c '$bad=0; foreach($f in Get-ChildItem -Recurse -Filter *.ps1){ $t=$null;$e=$null; [void][System.Management.Automation.Language.Parser]::ParseFile($f.FullName,[ref]$t,[ref]$e); foreach($x in $e){ "$($f.Name):$($x.Extent.StartLineNumber) $($x.Message)"; $bad++ } }; if($bad){exit 1}; "ok"'
+echo "[2b] ps1 ascii only (PS 5.1 reads BOM-less files as ANSI)"
+if grep -lP '[^\x00-\x7F]' $(git ls-files '*.ps1'; git ls-files --others --exclude-standard '*.ps1'); then echo "non-ASCII in ps1"; exit 1; fi; echo ok
 echo "[3/4] plans"
-"$PW" -NoProfile -c 'foreach($f in Get-ChildItem plans/*.json){ $p = Get-Content -Raw -Encoding UTF8 $f | ConvertFrom-Json; if(-not $p.imya -or -not $p.stranica.url_soderzhit -or -not $p.shagi){ "BAD $($f.Name)"; exit 1 }; foreach($s in $p.shagi){ if($s.tip -notin "tekst","chislo","flazhok","knopka"){ "BAD tip $($s.tip) in $($f.Name)"; exit 1 } } }; "ok"'
+"$PW" -NoProfile -c 'foreach($f in Get-ChildItem plans/*.json){ $p = Get-Content -Raw -Encoding UTF8 $f | ConvertFrom-Json; if(-not $p.imya -or -not $p.stranica.url_soderzhit -or -not $p.shagi){ "BAD $($f.Name)"; exit 1 }; foreach($s in $p.shagi){ if($s.tip -notin "tekst","chislo","flazhok","knopka","fajl"){ "BAD tip $($s.tip) in $($f.Name)"; exit 1 } } }; "ok"'
 echo "[4/4] svod on fixture"
 T=$(mktemp -d); mkdir -p "$T/rez"
 python3 - "$T/rez/rezultat-1.json" <<'PY'

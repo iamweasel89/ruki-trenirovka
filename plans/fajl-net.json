@@ -1,0 +1,43 @@
+{
+ "imya": "fajl-net",
+ "stranica": {
+  "url_soderzhit": "/polygon/fajl-profil.html",
+  "zagolovok_soderzhit": "Полигон — Профиль"
+ },
+ "shagi": [
+  {
+   "tip": "tekst",
+   "id": "imya_profilya",
+   "metka": "Имя в профиле",
+   "znachenie": "Испытатель Второй"
+  },
+  {
+   "tip": "fajl",
+   "id": "foto-zagruzit",
+   "metka": "Загрузить фото",
+   "fajly": [
+    "%RUKI_FAJLY%\\net-takogo-fajla.png"
+   ],
+   "obrezka": {
+    "id": "obrezka-sohranit",
+    "metka": "Сохранить"
+   }
+  },
+  {
+   "tip": "knopka",
+   "id": "sohranit",
+   "metka": "Сохранить профиль",
+   "final": true,
+   "posle": {
+    "tip": "tekst",
+    "id": "itog",
+    "metka": "Итог"
+   }
+  }
+ ],
+ "ozhidaetsya_ostanovka": "net-fajla",
+ "proverka_stranicy": {
+  "foto": null,
+  "otpravleno": false
+ }
+}

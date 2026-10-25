@@ -15,6 +15,7 @@ $koren = Split-Path -Parent $PSScriptRoot
 . (Join-Path $koren 'lib\uia.ps1')
 . (Join-Path $koren 'lib\okno.ps1')
 . (Join-Path $koren 'lib\vvod.ps1')
+. (Join-Path $koren 'lib\fajl.ps1')
 
 $sw = [Diagnostics.Stopwatch]::StartNew()
 Write-RukiLog "start plan=$Plan"
@@ -63,6 +64,7 @@ function Invoke-Shag($shag) {
   switch ($shag.tip) {
     { $_ -in 'tekst', 'chislo' } { return Set-Tekst $ctx $shag }
     'flazhok' { return Set-Flazhok $ctx $shag }
+    'fajl' { return Invoke-ZagruzkaFajla $ctx $shag }
     default { return @{ Status = 'stop'; Prichina = 'neizvestnyj-tip' } }
   }
 }
@@ -162,11 +164,17 @@ do {
     else {
       Update-EstParol
       $r = Invoke-Shag $shag
-      if ($r.Status -eq 'ok') { $polya += $shag }
+      # a cancelled file dialog is the planned outcome of a cancel step
+      $otm = ($r.Status -eq 'otmeneno')
+      if ($otm) { $r.Status = 'ok' }
+      # file steps are not replayed by the reconciliation (an upload is not idempotent)
+      if ($r.Status -eq 'ok' -and $shag.tip -ne 'fajl') { $polya += $shag }
     }
-    $rez.shagi += [ordered]@{ n = $n; tip = $shag.tip; id = $shag.id; status = $r.Status; popytki = $r.Popytki; ms = [int]($sw.ElapsedMilliseconds - $t0); krug = $perezapusk }
+    $zap = [ordered]@{ n = $n; tip = $shag.tip; id = $shag.id; status = $r.Status; popytki = $r.Popytki; ms = [int]($sw.ElapsedMilliseconds - $t0); krug = $perezapusk }
+    if ($shag.tip -eq 'fajl') { $zap.fajlov = $r.Fajlov; $zap.otmeneno = [bool]$otm }
+    $rez.shagi += $zap
     if ($r.Status -eq 'ok') { continue }
-    $podr = ''
+    $podr = if ($r.Podrobno) { [string]$r.Podrobno } else { '' }
     if ($r.Prichina -in $vosstanovimye -and -not $script:finalNazhata) {
       $k = Update-Kontekst
       if ($k -eq 'novyj' -and $perezapusk -lt $PerezapuskovMaks) {

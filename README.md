@@ -12,3 +12,7 @@ visibility, and a hard stop on password fields.
 - `ci/proverka-gigieny.ps1` public hygiene check (runs first in CI)
 
 Results of the last run are published to the branch `itog` (`itog.md`, `itog.json`).
+
+File upload trainer (branch `trener-fajl`): `lib/fajl.ps1` drives the system file-open dialog
+(file name box by ValuePattern, Open / Cancel by posted clicks), pages `polygon/fajl-*.html`,
+plans `plans/fajl-*.json` (step type `fajl`), job `ci/progon-fajl.ps1`, results in branch `itog-fajl`.

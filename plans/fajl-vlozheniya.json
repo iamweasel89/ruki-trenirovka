@@ -1,0 +1,58 @@
+{
+ "imya": "fajl-vlozheniya",
+ "stranica": {
+  "url_soderzhit": "/polygon/fajl-vlozheniya.html",
+  "zagolovok_soderzhit": "Полигон — Обращение"
+ },
+ "shagi": [
+  {
+   "tip": "tekst",
+   "id": "tema",
+   "metka": "Тема",
+   "znachenie": "Документы к заявке"
+  },
+  {
+   "tip": "fajl",
+   "id": "zona",
+   "metka": "Перетащите файлы сюда или нажмите, чтобы выбрать",
+   "fajly": [
+    "%RUKI_FAJLY%\\vlozh1.png",
+    "%RUKI_FAJLY%\\vlozh2.png",
+    "%RUKI_FAJLY%\\zametka.txt"
+   ]
+  },
+  {
+   "tip": "fajl",
+   "id": "skan",
+   "metka": "Скан документа",
+   "fajly": [
+    "%RUKI_FAJLY%\\skan.png"
+   ],
+   "proverka": {
+    "soderzhit": [
+     "Скан: skan.png"
+    ]
+   }
+  },
+  {
+   "tip": "knopka",
+   "id": "otpravit",
+   "metka": "Отправить обращение",
+   "final": true,
+   "posle": {
+    "tip": "tekst",
+    "id": "itog",
+    "metka": "Итог"
+   }
+  }
+ ],
+ "proverka_stranicy": {
+  "vlozheniya": [
+   "vlozh1.png",
+   "vlozh2.png",
+   "zametka.txt"
+  ],
+  "skan": "skan.png",
+  "otpravleno": true
+ }
+}

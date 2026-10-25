@@ -1,0 +1,36 @@
+{
+ "imya": "fajl-otmena",
+ "stranica": {
+  "url_soderzhit": "/polygon/fajl-profil.html",
+  "zagolovok_soderzhit": "Полигон — Профиль"
+ },
+ "shagi": [
+  {
+   "tip": "fajl",
+   "id": "foto-zagruzit",
+   "metka": "Загрузить фото",
+   "otmena": true
+  },
+  {
+   "tip": "tekst",
+   "id": "imya_profilya",
+   "metka": "Имя в профиле",
+   "znachenie": "Испытатель Второй"
+  },
+  {
+   "tip": "knopka",
+   "id": "sohranit",
+   "metka": "Сохранить профиль",
+   "final": true,
+   "posle": {
+    "tip": "tekst",
+    "id": "itog",
+    "metka": "Итог"
+   }
+  }
+ ],
+ "proverka_stranicy": {
+  "foto": null,
+  "otpravleno": true
+ }
+}

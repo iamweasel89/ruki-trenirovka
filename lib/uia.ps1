@@ -26,6 +26,7 @@ function Get-TipyDlya([string]$tip) {
     'chislo'  { @($CT::Spinner, $CT::Edit) }
     'flazhok' { @($CT::CheckBox) }
     'knopka'  { @($CT::Button) }
+    'fajl'    { @($CT::Button, $CT::Hyperlink, $CT::Custom, $CT::Group, $CT::Text, $CT::Image, $CT::Pane, $CT::Edit) }
     default   { @($CT::Edit) }
   }
 }
