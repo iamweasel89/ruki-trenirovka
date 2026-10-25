@@ -40,8 +40,12 @@ for ($r = 0; $r -lt $Progonov; $r++) {
   $log = Join-Path $tmp "log_$s.txt"
   $env:RUKI_LOG = $log
   Remove-Item $out, $log -ErrorAction SilentlyContinue
-  $p = Start-Process powershell -ArgumentList @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', (Join-Path $koren 'skills\zapolnit-formu.ps1'), '-Plan', $planPut, '-Vyhod', $out) -PassThru -WindowStyle Hidden
-  if (-not $p.WaitForExit(240000)) { Stop-Process $p -Force; $skill = $null }
+  $errF = Join-Path $tmp "err_$s.txt"; $soF = Join-Path $tmp "so_$s.txt"
+  $zapuskOshibka = $null
+  try {
+    $p = Start-Process powershell -ArgumentList @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', (Join-Path $koren 'skills\zapolnit-formu.ps1'), '-Plan', $planPut, '-Vyhod', $out) -PassThru -NoNewWindow -RedirectStandardError $errF -RedirectStandardOutput $soF
+    if (-not $p.WaitForExit(240000)) { Stop-Process $p -Force -ErrorAction SilentlyContinue }
+  } catch { $zapuskOshibka = $_.Exception.Message }
   $skill = if (Test-Path $out) { Get-Content -Raw -Encoding UTF8 $out | ConvertFrom-Json } else { $null }
 
   # independent check of what the page received
@@ -77,6 +81,8 @@ for ($r = 0; $r -lt $Progonov; $r++) {
   if (-not $damp -and $o -and $r -eq 0) { $damp = (Get-DampDereva $o.Doc 0 8) -join "`n" }
   if ($job) { Stop-Job $job -ErrorAction SilentlyContinue; Remove-Job $job -Force -ErrorAction SilentlyContinue }
   $logTail = if (Test-Path $log) { @(Get-Content $log -Encoding UTF8 | Select-Object -Last 25) } else { @() }
+  if ($zapuskOshibka) { $logTail += "ZAPUSK: $zapuskOshibka" }
+  foreach ($ff in @($errF, $soF)) { if (Test-Path $ff) { $logTail += @(Get-Content $ff -Encoding UTF8 | Select-Object -Last 15) } }
   $vse += [ordered]@{
     progon = $r; seed = $s; stranica = $imya; okno_pomeha = $oknoPomeha
     skill = $skill; proverka = $prov; log = $logTail
