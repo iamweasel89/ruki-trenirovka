@@ -1,0 +1,7 @@
+[1/6] registraciya seed=72000 uspeh=True lozhnyj=False ok (35 s)
+[2/6] registraciya-stop seed=72001 uspeh=True lozhnyj=False ostanovka=oshibka-ne-predusmotrena otpravleno=False (51 s)
+[3/6] zayavka-chastnoe seed=72002 uspeh=True lozhnyj=False ok (107 s)
+[4/6] zayavka-org seed=72003 uspeh=True lozhnyj=False ok (168 s)
+[5/6] dostavka-kurer seed=72004 uspeh=True lozhnyj=False ok (223 s)
+[6/6] dostavka-samovyvoz seed=72005 uspeh=True lozhnyj=False ok (255 s)
+neudach: 0 iz 6

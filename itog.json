@@ -1,0 +1,117 @@
+{
+ "etap": "matrica",
+ "run": "40208466127",
+ "sha": "a257d28d7759ff44758e878da41f255d45f181b6",
+ "progonov": 30,
+ "uspeshno": 30,
+ "dolya_uspeha_proc": 100.0,
+ "lozhnyh_uspehov": 0,
+ "rano_otpravleno": 0,
+ "tochnost_itoga_srednyaya": 1.0,
+ "izmereno_tochnost": 25,
+ "stranic_projdeno": 262,
+ "max_seriya_stranic": 56,
+ "srednyaya_max_seriya": 52.4,
+ "ispravlenij_po_soobshcheniyam": 25,
+ "vozvratov_nazad": 152,
+ "proverka_polej": {
+  "provereno": 225,
+  "ispravleno": 8
+ },
+ "po_planam": {
+  "dostavka-samovyvoz": {
+   "progonov": 5,
+   "uspeh": 5
+  },
+  "registraciya": {
+   "progonov": 5,
+   "uspeh": 5
+  },
+  "registraciya-stop": {
+   "progonov": 5,
+   "uspeh": 5
+  },
+  "zayavka-chastnoe": {
+   "progonov": 5,
+   "uspeh": 5
+  },
+  "zayavka-org": {
+   "progonov": 5,
+   "uspeh": 5
+  },
+  "dostavka-kurer": {
+   "progonov": 5,
+   "uspeh": 5
+  }
+ },
+ "prichiny_neudach": {},
+ "pomehi_vstrecheno": {
+  "skill:dialog": 48,
+  "skill:fokus": 437,
+  "stranica:zaderzhka": 464,
+  "stranica:fokus": 40,
+  "stranica:modal": 44,
+  "skill:sverka-ispravila": 39,
+  "skill:povtor-po-soobshcheniyu": 8,
+  "stranica:pererisovka": 41,
+  "stranica:sboj": 8,
+  "skill:klik-fokus": 10,
+  "skill:proverka-polej-ispravila": 8,
+  "skill:vvod-ne-doshel": 3,
+  "stranica:chernovik": 13,
+  "skill:okno": 7,
+  "skill:svodka-rashozhdenie": 11,
+  "stranica:iskazhenie": 11,
+  "okno-zapusk": 8
+ },
+ "minut_runnera": 27.0,
+ "po_rabotam": [
+  {
+   "fail": "rezultat-1.json",
+   "seed": 1,
+   "progonov": 6,
+   "uspeh": 6,
+   "max_seriya_stranic": 53,
+   "sekund": 254,
+   "oshibka": ""
+  },
+  {
+   "fail": "rezultat-2.json",
+   "seed": 2,
+   "progonov": 6,
+   "uspeh": 6,
+   "max_seriya_stranic": 56,
+   "sekund": 256,
+   "oshibka": ""
+  },
+  {
+   "fail": "rezultat-3.json",
+   "seed": 3,
+   "progonov": 6,
+   "uspeh": 6,
+   "max_seriya_stranic": 48,
+   "sekund": 243,
+   "oshibka": ""
+  },
+  {
+   "fail": "rezultat-4.json",
+   "seed": 4,
+   "progonov": 6,
+   "uspeh": 6,
+   "max_seriya_stranic": 55,
+   "sekund": 262,
+   "oshibka": ""
+  },
+  {
+   "fail": "rezultat-5.json",
+   "seed": 5,
+   "progonov": 6,
+   "uspeh": 6,
+   "max_seriya_stranic": 50,
+   "sekund": 244,
+   "oshibka": ""
+  }
+ ],
+ "neudachi": [],
+ "damp_dereva": "ControlType.Document|Полигон — Доставка|id=RootWebArea|lct=document|pw=False\n  ControlType.Group||id=|lct=header|pw=False\n    ControlType.Text|Полигон|id=|lct=text|pw=False\n    ControlType.Edit|Поиск по сайту|id=poisk|lct=edit|pw=False\n  ControlType.Group||id=|lct=main|pw=False\n    ControlType.Text|Оформление доставки|id=|lct=heading|pw=False\n    ControlType.Group||id=master|lct=form|pw=False\n      ControlType.Text|Шаг 5 из 5 · Проверьте перед отправкой|id=|lct=heading|pw=False\n      ControlType.List||id=svodka-spisok|lct=list|pw=False\n        ControlType.ListItem|Имя: Богдан Ли|id=|lct=list item|pw=False\n        ControlType.ListItem|Телефон: +99900000222|id=|lct=list item|pw=False\n        ControlType.ListItem|Способ получения: Самовывоз|id=|lct=list item|pw=False\n        ControlType.ListItem|Пункт выдачи: В центре|id=|lct=list item|pw=False\n        ControlType.ListItem|Позвонить заранее: нет|id=|lct=list item|pw=False\n        ControlType.ListItem|Комментарий курьеру: —|id=|lct=list item|pw=False\n        ControlType.ListItem|Время доставки: Утро|id=|lct=list item|pw=False\n        ControlType.ListItem|Стоимость доставки: бесплатно|id=|lct=list item|pw=False\n      ControlType.Button|Назад|id=|lct=button|pw=False\n      ControlType.Button|Подтвердить заказ|id=|lct=button|pw=False"
+}
