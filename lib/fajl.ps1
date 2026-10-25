@@ -352,6 +352,55 @@ function Show-VidimoDlyaKlika($el) {
   if ($el.TryGetCurrentPattern([System.Windows.Automation.ScrollItemPattern]::Pattern, [ref]$p)) { $p.ScrollIntoView(); Start-Sleep -Milliseconds 150 }
 }
 
+# give the dialog the path one way and press Open.
+# kombo: WM_SETTEXT on the combo box 1148 (it updates its own state and the edit inside)
+# klaviatura: the dialog in front, keys into the file name box (its default focus), Enter
+# kavychki: the full path in quotes into the edit
+# several files: first the folder (the dialog goes there), then the names in quotes.
+# returns @{ Itog = zakryt|ostalsya|net; Soob }
+function Send-PutVDialog($ctx, [IntPtr]$dlg, [string[]]$fajly, [string[]]$imena, [string]$sposob) {
+  $shagi = @()
+  if ($fajly.Count -gt 1) { $shagi += [IO.Path]::GetDirectoryName($fajly[0]); $shagi += (($imena | ForEach-Object { '"' + $_ + '"' }) -join ' ') }
+  elseif ($sposob -eq 'kavychki') { $shagi += ('"' + $fajly[0] + '"') }
+  else { $shagi += $fajly[0] }
+  for ($i = 0; $i -lt $shagi.Count; $i++) {
+    $tekst = $shagi[$i]
+    $poslednij = ($i -eq $shagi.Count - 1)
+    $kombo = [RukiDialog]::PoId($dlg, 1148)
+    $ed = [RukiDialog]::Edit($kombo)
+    if ($sposob -eq 'klaviatura') {
+      $null = [RukiOkno]::Vperyod($dlg)
+      Start-Sleep -Milliseconds 200
+      if ((Get-PerednijRoot) -ne $dlg) { $null = [RukiOkno]::Vperyod($dlg); Start-Sleep -Milliseconds 300 }
+      if ((Get-PerednijRoot) -ne $dlg) { return @{ Itog = 'net'; Soob = 'dialog-ne-vperedi' } }
+      Send-Klavisha 'CtrlA'; Send-Klavisha 'Delete'
+      $n = Send-Tekst $tekst 6 $dlg
+      if ($n -lt $tekst.Length) { return @{ Itog = 'net'; Soob = 'vvod-prervan' } }
+    } else {
+      $cel = if ($sposob -eq 'kombo' -and $kombo -ne [IntPtr]::Zero) { $kombo } else { $ed }
+      if ($cel -eq [IntPtr]::Zero) { return @{ Itog = 'net'; Soob = 'net-polya' } }
+      $null = [RukiDialog]::ZadatTekst($cel, $tekst)
+    }
+    $pole = [pscustomobject]@{ Hwnd = $ed; El = $null }
+    $v = Wait-ZnacheniePolya $pole $tekst 800
+    if ($v -cne $tekst) { Write-RukiLog "dialog: v pole ne to (dlina $(([string]$v).Length) vmesto $($tekst.Length))"; return @{ Itog = 'net'; Soob = 'put-ne-vstavlen' } }
+    if ($sposob -eq 'klaviatura' -and (Get-PerednijRoot) -eq $dlg) { Send-Klavisha 'Enter' } else { $null = Invoke-KnopkaDialoga $dlg 1 }
+    if ($poslednij) {
+      if (Wait-DialogZakryt $dlg 4000) { return @{ Itog = 'zakryt' } }
+      $soob = Close-Soobshcheniya $dlg
+      return @{ Itog = 'ostalsya'; Soob = $soob }
+    }
+    # going to the folder: the dialog stays open and the box is emptied
+    $sw = [Diagnostics.Stopwatch]::StartNew()
+    while ($sw.ElapsedMilliseconds -lt 3000 -and (Get-ZnacheniePolya $pole) -ceq $tekst) { Start-Sleep -Milliseconds 100 }
+    Start-Sleep -Milliseconds 400
+    if (-not [RukiDialog]::IsWindow($dlg)) { return @{ Itog = 'ostalsya'; Soob = 'zakrylsya-na-papke' } }
+    $soob = Close-Soobshcheniya $dlg
+    if ($soob) { return @{ Itog = 'ostalsya'; Soob = "papka: $soob" } }
+  }
+  return @{ Itog = 'net' }
+}
+
 # the whole movement. returns @{ Status = ok|otmeneno|stop; Prichina; Podrobno; Popytki; Fajlov }
 function Invoke-ZagruzkaFajla($ctx, $shag) {
   $otmena = [bool](Get-PoleSpec $shag 'otmena')
@@ -393,24 +442,17 @@ function Invoke-ZagruzkaFajla($ctx, $shag) {
       try { foreach ($l in @(Get-DampDereva ($AE::FromHandle($dlg)) 0 7 | Select-Object -First 80)) { Write-RukiLog "damp: $l" } } catch {}
       $null = Close-DialogFajla $dlg; return @{ Status = 'stop'; Prichina = 'net-polya-imeni'; Popytki = $pop }
     }
-    if ($fajly.Count -gt 1) {
-      # several files: go to their folder first, then name them all in quotes
-      $papka = [IO.Path]::GetDirectoryName($fajly[0])
-      if (-not (Set-PoleImeni $ctx $dlg $pole $papka)) { $null = Close-DialogFajla $dlg; return @{ Status = 'stop'; Prichina = 'put-ne-vstavlen'; Popytki = $pop } }
-      $null = Invoke-KnopkaDialoga $dlg 1
-      $sw = [Diagnostics.Stopwatch]::StartNew()
-      while ($sw.ElapsedMilliseconds -lt 3000 -and (Get-ZnacheniePolya $pole) -ceq $papka) { Start-Sleep -Milliseconds 100 }
-      Start-Sleep -Milliseconds 300
-      if (-not [RukiDialog]::IsWindow($dlg)) { return @{ Status = 'stop'; Prichina = 'dialog-zakrylsya-na-papke'; Popytki = $pop } }
-      $pole = Get-PoleImeni $dlg
-      $znach = ($imena | ForEach-Object { '"' + $_ + '"' }) -join ' '
-    } else { $znach = $fajly[0] }
-    if (-not $pole -or -not (Set-PoleImeni $ctx $dlg $pole $znach)) { $null = Close-DialogFajla $dlg; return @{ Status = 'stop'; Prichina = 'put-ne-vstavlen'; Popytki = $pop } }
-    $null = Invoke-KnopkaDialoga $dlg 1
-    if (-not (Wait-DialogZakryt $dlg 4000)) {
-      $soob = Close-Soobshcheniya $dlg
-      Write-RukiLog "dialog: ne zakrylsya posle Otkryt; soobshchenie '$soob'"
-      $null = Close-DialogFajla $dlg
+    # ways to give the dialog the path, tried in order on the same dialog; the one that worked is noted
+    $prinyat = $false; $soob = ''
+    foreach ($sposob in @('kombo', 'klaviatura', 'kavychki')) {
+      if (-not [RukiDialog]::IsWindow($dlg)) { break }
+      $r = Send-PutVDialog $ctx $dlg $fajly $imena $sposob
+      Write-RukiLog "dialog: sposob $sposob -> $($r.Itog) $($r.Soob)"
+      if ($r.Itog -eq 'zakryt') { $prinyat = $true; Add-Pomeha $ctx "put-$sposob"; break }
+      if ($r.Soob) { $soob = $r.Soob }
+    }
+    if (-not $prinyat) {
+      if ([RukiDialog]::IsWindow($dlg)) { $null = Close-DialogFajla $dlg }
       if ($soob) { return @{ Status = 'stop'; Prichina = 'dialog-otklonil'; Podrobno = $soob; Popytki = $pop } }
       Add-Pomeha $ctx 'dialog-ne-prinyal'
       continue
