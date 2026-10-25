@@ -1,0 +1,12 @@
+[1/8] zametka seed=52000 uspeh=True skill_ok=True lozh=False ok | modal,fokus,pererisovka,zaderzhka | 
+[2/8] parol seed=52001 uspeh=True skill_ok=False lozh=False ostanovka=pole-parolya dlina_parolya=0 | 
+modal,fokus,pererisovka,zaderzhka | perekrytie,svorachivanie,svorachivanie
+[3/8] anketa seed=52002 uspeh=True skill_ok=True lozh=False ok | modal,fokus,pererisovka,zaderzhka,obnovlenie | 
+svorachivanie
+[4/8] nastrojki seed=52003 uspeh=True skill_ok=True lozh=False ok | modal,fokus,pererisovka,zaderzhka | 
+[5/8] zametka seed=52004 uspeh=True skill_ok=True lozh=False ok | modal,fokus,pererisovka,zaderzhka | 
+svorachivanie,perekrytie,svorachivanie
+[6/8] parol seed=52005 uspeh=True skill_ok=False lozh=False ostanovka=pole-parolya dlina_parolya=0 | 
+modal,fokus,pererisovka,zaderzhka | 
+[7/8] anketa seed=52006 uspeh=True skill_ok=True lozh=False ok | modal,fokus,pererisovka,zaderzhka | perekrytie
+[8/8] nastrojki seed=52007 uspeh=True skill_ok=True lozh=False ok | modal,fokus,pererisovka,zaderzhka | 

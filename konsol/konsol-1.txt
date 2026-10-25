@@ -1,0 +1,14 @@
+[1/8] nastrojki seed=51000 uspeh=True skill_ok=True lozh=False ok | modal,fokus,pererisovka,zaderzhka,obnovlenie | 
+[2/8] zametka seed=51001 uspeh=True skill_ok=True lozh=False ok | modal,fokus,pererisovka,zaderzhka | 
+perekrytie,svorachivanie,svorachivanie
+[3/8] parol seed=51002 uspeh=True skill_ok=False lozh=False ostanovka=pole-parolya dlina_parolya=0 | 
+modal,fokus,pererisovka,zaderzhka | perekrytie,svorachivanie,svorachivanie
+[4/8] anketa seed=51003 uspeh=True skill_ok=True lozh=False ok | modal,fokus,pererisovka,zaderzhka,obnovlenie | 
+perekrytie
+[5/8] nastrojki seed=51004 uspeh=True skill_ok=True lozh=False ok | modal,fokus,pererisovka,zaderzhka | 
+perekrytie,svorachivanie,svorachivanie
+[6/8] zametka seed=51005 uspeh=True skill_ok=True lozh=False ok | modal,fokus,pererisovka,medlenno | 
+svorachivanie,svorachivanie
+[7/8] parol seed=51006 uspeh=True skill_ok=False lozh=False ostanovka=pole-parolya dlina_parolya=0 | 
+modal,fokus,pererisovka,zaderzhka | perekrytie,svorachivanie,svorachivanie
+[8/8] anketa seed=51007 uspeh=True skill_ok=True lozh=False ok | modal,fokus,pererisovka,medlenno,obnovlenie | 

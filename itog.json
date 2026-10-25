@@ -1,0 +1,123 @@
+{
+ "run": "40204891501",
+ "sha": "9b93befe0047f3c869800cd5d88724f8091d4652",
+ "progonov": 28,
+ "uspeshno": 28,
+ "dolya_uspeha_proc": 100.0,
+ "progonov_s_pomehami": 28,
+ "vosstanovleno": 28,
+ "dolya_vosstanovlenij_proc": 100.0,
+ "chestno": 28,
+ "dolya_chestnosti_proc": 100.0,
+ "lozhnyh_uspehov": 0,
+ "utechek_v_chuzhoe_okno": 0,
+ "po_pomehe": {
+  "_skill_zametil": {
+   "progonov": 28,
+   "vosstanovleno": 28
+  },
+  "fokus": {
+   "progonov": 19,
+   "vosstanovleno": 19
+  },
+  "medlenno": {
+   "progonov": 5,
+   "vosstanovleno": 5
+  },
+  "modal": {
+   "progonov": 21,
+   "vosstanovleno": 21
+  },
+  "obnovlenie": {
+   "progonov": 9,
+   "vosstanovleno": 9
+  },
+  "perekrytie": {
+   "progonov": 14,
+   "vosstanovleno": 14
+  },
+  "pererisovka": {
+   "progonov": 21,
+   "vosstanovleno": 21
+  },
+  "svorachivanie": {
+   "progonov": 15,
+   "vosstanovleno": 15
+  },
+  "zaderzhka": {
+   "progonov": 16,
+   "vosstanovleno": 16
+  }
+ },
+ "po_stranicam": {
+  "nastrojki": {
+   "progonov": 7,
+   "uspeh": 7
+  },
+  "zametka": {
+   "progonov": 7,
+   "uspeh": 7
+  },
+  "parol": {
+   "progonov": 7,
+   "uspeh": 7
+  },
+  "anketa": {
+   "progonov": 7,
+   "uspeh": 7
+  }
+ },
+ "prichiny_neudach": {},
+ "pomehi_stranicy": {
+  "obnovlenie": 9,
+  "zaderzhka": 26,
+  "modal": 42,
+  "pererisovka": 39,
+  "fokus": 33,
+  "medlenno": 9
+ },
+ "pomehi_zamecheny_skillom": {
+  "dialog": 65,
+  "fokus": 255,
+  "sverka-ispravila": 21,
+  "perezagruzka": 9,
+  "okno": 21,
+  "vvod-prervan": 4,
+  "klik-fokus": 15,
+  "fokus-v-parol": 2,
+  "vvod-ne-doshel": 1
+ },
+ "okna": {
+  "perekrytie": 14,
+  "svorachivanie": 28
+ },
+ "minut_runnera": 13.8,
+ "po_rabotam": [
+  {
+   "seed": 1,
+   "progonov": 8,
+   "uspeh": 8,
+   "sekund": 233
+  },
+  {
+   "seed": 2,
+   "progonov": 8,
+   "uspeh": 8,
+   "sekund": 180
+  },
+  {
+   "seed": 3,
+   "progonov": 8,
+   "uspeh": 8,
+   "sekund": 172
+  },
+  {
+   "seed": 0,
+   "progonov": 4,
+   "uspeh": 4,
+   "sekund": 169
+  }
+ ],
+ "neudachi": [],
+ "damp_dereva": "ControlType.Document|Полигон — отправлено|id=RootWebArea|lct=document|pw=False\n  ControlType.Group||id=|lct=header|pw=False\n    ControlType.Text|Полигон|id=|lct=text|pw=False\n    ControlType.Edit|Поиск по сайту|id=poisk|lct=edit|pw=False\n  ControlType.Group||id=|lct=main|pw=False\n    ControlType.Text|Настройки|id=|lct=heading|pw=False\n    ControlType.Text|Отправлено|id=|lct=heading|pw=False\n    ControlType.Edit|Итог|id=itog|lct=edit|pw=False"
+}

@@ -1,0 +1,8 @@
+[1/4] anketa seed=50000 uspeh=True skill_ok=True lozh=False ok | modal,fokus,pererisovka,medlenno,obnovlenie | 
+svorachivanie,perekrytie,svorachivanie
+[2/4] nastrojki seed=50001 uspeh=True skill_ok=True lozh=False ok | modal,fokus,pererisovka,medlenno,obnovlenie | 
+svorachivanie,perekrytie,svorachivanie
+[3/4] zametka seed=50002 uspeh=True skill_ok=True lozh=False ok | modal,fokus,pererisovka,medlenno,obnovlenie | 
+perekrytie,svorachivanie,svorachivanie
+[4/4] parol seed=50003 uspeh=True skill_ok=False lozh=False ostanovka=pole-parolya dlina_parolya=0 | 
+modal,fokus,pererisovka,medlenno | perekrytie,svorachivanie,svorachivanie
